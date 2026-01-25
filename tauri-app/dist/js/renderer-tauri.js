@@ -34,356 +34,236 @@ document.addEventListener('DOMContentLoaded', function() {
     const { listen } = window.__TAURI__.event;
     const { open } = window.__TAURI__.shell;
 
-  // Get iframe element
-  const webview = document.getElementById('webview');
-  const sidebar = document.getElementById('sidebar');
-  const barContainer = document.getElementById('bar-container');
+    // DOM Elements
+    const newConversationBtn = document.getElementById('new-conversation-btn');
+    const modelSettingsBtn = document.getElementById('model-settings-btn');
+    const networkSettingsBtn = document.getElementById('network-settings-btn');
+    const versionInfoBtn = document.getElementById('version-info-btn');
+    const manualBtn = document.getElementById('manual-btn');
+    const closeAppBtn = document.getElementById('close-app-btn');
 
-  // Listen for restore-webview-url event
-  listen('restore-webview-url', (event) => {
-    sidebar.style.display = 'flex';
-    barContainer.style.display = 'none';
-    barContainer.innerHTML = '';
+    // New conversation button
+    newConversationBtn.addEventListener('click', async () => {
+      try {
+        // Get enabled models
+        const models = await invoke('get_models');
+        const defaultModel = models.find(m => m.enabled);
+        
+        if (defaultModel) {
+          // Create new conversation with default model
+          const conversation = await invoke('create_conversation', {
+            name: `新会话 ${new Date().toLocaleTimeString()}`,
+            modelId: defaultModel.id
+          });
+          
+          // Switch to new conversation in sidebar
+          addConversationToSidebar(conversation);
+          alert(`已创建新会话：${conversation.name}`);
+        } else {
+          alert('请先在模型设置中启用至少一个模型！');
+        }
+      } catch (error) {
+        console.error('Failed to create conversation:', error);
+        alert('创建会话失败：' + error);
+      }
+    });
 
-    // Restore webview original page
-    if (event.payload) {
-      webview.setAttribute('src', event.payload);
-    }
-  });
+    // Model settings button
+    modelSettingsBtn.addEventListener('click', async () => {
+      try {
+        await invoke('open_version_dialog');
+        window.location.href = 'model-settings.html';
+      } catch (error) {
+        console.error('Failed to open model settings:', error);
+        alert('打开模型设置失败：' + error);
+      }
+    });
 
-  // Listen for restore-sidebar event
-  listen('restore-sidebar', () => {
-    sidebar.style.display = 'flex';
-    barContainer.style.display = 'none';
-    barContainer.innerHTML = '';
-  });
+    // Network settings button
+    networkSettingsBtn.addEventListener('click', async () => {
+      try {
+        await invoke('open_proxy_dialog');
+      } catch (error) {
+        console.error('Failed to open network settings:', error);
+        alert('打开网络设置失败：' + error);
+      }
+    });
 
-  /**************** 测边栏加载模型事件规则 *****************/
-  // Get AI model buttons
-  const kimiButton = document.getElementById('kimi');
-  const doubaoButton = document.getElementById('doubao');
-  const tyqwButton = document.getElementById('tyqw');
-  const tenxunButton = document.getElementById('tenxun');
-  const openaiButton = document.getElementById('openai');
-  const googleButton = document.getElementById('google');
-  const wxyyButton = document.getElementById('wxyy');
-  const poeButton = document.getElementById('poe');
-  const deepseekButton = document.getElementById('deepseek');
-  const claudeButton = document.getElementById('claude');
+    // Version info button
+    versionInfoBtn.addEventListener('click', async () => {
+      try {
+        await invoke('open_version_dialog');
+      } catch (error) {
+        console.error('Failed to open version info:', error);
+        alert('打开版本信息失败：' + error);
+      }
+    });
 
-  const manusButton = document.getElementById('manus');
-  const grokButton = document.getElementById('grok');
-  const copilotButton = document.getElementById('copilot');
-  const metaButton = document.getElementById('meta');
-  const perplexityButton = document.getElementById('perplexity');
-  const deeplButton = document.getElementById('deepl');
-  const youdaoButton = document.getElementById('youdaoranslator');
-  const sciencepalButton = document.getElementById('sciencepal');
-  const bingButton = document.getElementById('bing');
+    // Manual button
+    manualBtn.addEventListener('click', async () => {
+      try {
+        await open('assets/Readme.pdf');
+      } catch (error) {
+        console.error('Failed to open manual:', error);
+        alert('打开用户手册失败：' + error);
+      }
+    });
 
-
-  // Set button click event listeners, load web pages
-  deepseekButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://chat.deepseek.com/");
-  });
-
-  kimiButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://kimi.moonshot.cn/");
-  });
-
-  doubaoButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://www.doubao.com/");
-  });
-
-  tyqwButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://www.tongyi.com/");
-  });
-
-  tenxunButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://yuanbao.tencent.com/chat/");
-  });
-
-  openaiButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://chatgpt.com/");
-  });
-
-  googleButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://gemini.google.com/");
-  });
-
-  wxyyButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://yiyan.baidu.com/");
-  });
-
-  poeButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://poe.com/");
-  });
-
-  claudeButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://claude.ai/");
-  });
-
-  manusButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://manus.im/");
-  });
-
-  grokButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://x.ai/grok");
-  });
-
-  copilotButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://copilot.microsoft.com/");
-  });
-
-  metaButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://www.meta.ai/");
-  });
-
-  perplexityButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://www.perplexity.ai/");
-  });
-
-
-  deeplButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://www.deepl.com/");
-  });
-
-  youdaoButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://fanyi.youdao.com/#/TextTranslate");
-  });
-
-  sciencepalButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://sciencepal.ai/");
-  });
-
-  bingButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://www.bing.com/");
-  });
-
-
-
-  /**************** 测边栏设置按钮事件规则 *****************/
-  // Get "Back to Home" button
-  const homeBtn = document.getElementById('home-btn');
-  // Get "Network Settings" button
-  const setProxyBtn = document.getElementById('set-proxy-btn');
-  // Get "User Manual" button
-  const manualBtn = document.getElementById('manual-btn');
-  // Get "Version Info" button
-  const versionBtn = document.getElementById('version-btn');
-  // Get session clone button
-  const browserButton = document.getElementById('browser-btn');
-
-
-  // Listen to button click events, load specified html
-  homeBtn.addEventListener('click', () => {
-    webview.src = 'second.html';
-  });
-
-  manualBtn.addEventListener('click', async () => {
-    await open('assets/Readme.pdf');
-  });
-
-  // Add click event, send openProxyDialog
-  setProxyBtn.addEventListener('click', async () => {
-    await invoke('open_proxy_dialog');
-  });
-
-  // Add click event, send openVersionDialog
-  versionBtn.addEventListener('click', async () => {
-    await invoke('open_version_dialog');
-  });
-
-  browserButton.addEventListener('click', async function () {
-    let url = '';
-
-    try {
-      url = webview.src;
-    } catch (e) {
-      url = webview.getAttribute('src') || '';
-    }
-
-    if (!url) {
-      console.warn("webview 当前没有 URL。");
-      return;
-    }
-
-    // 1) Detach to new BrowserWindow (session maintained)
-    await invoke('detach_webview', { url: url });
-
-    // 2) Clear webview
-    webview.src = 'about:blank';
-  });
-
-  // Close application button
-  const closeBtn = document.getElementById('close-btn');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', async () => {
+    // Close app button
+    closeAppBtn.addEventListener('click', async () => {
       try {
         await invoke('close_window');
       } catch (error) {
-        console.error('关闭失败:', error);
-        // Fallback: try to close using window API
+        console.error('Failed to close app:', error);
+        // Fallback
         if (window.__TAURI__) {
           await window.__TAURI__.window.close();
         } else {
-          // Last resort: use browser close
           window.close();
         }
       }
     });
-  }
+
+    // Listen for conversation updates
+    listen('conversation-created', (event) => {
+      addConversationToSidebar(event.payload);
+    });
+
+    listen('conversation-deleted', (event) => {
+      removeConversationFromSidebar(event.payload);
+    });
+
+    // Load existing conversations to sidebar
+    loadConversationsToSidebar();
   });
+
+  // Add conversation to sidebar
+  function addConversationToSidebar(conversation) {
+    const conversationList = document.getElementById('conversation-list');
+    if (!conversationList) return;
+
+    const item = document.createElement('div');
+    item.className = 'conversation-item';
+    item.dataset.id = conversation.id;
+    item.innerHTML = `
+      <div class="conversation-name">${conversation.name}</div>
+      <button class="conversation-delete-btn" data-id="${conversation.id}">×</button>
+    `;
+
+    item.addEventListener('click', (e) => {
+      if (!e.target.classList.contains('conversation-delete-btn')) {
+        switchConversation(conversation.id);
+      }
+    });
+
+    // Delete button
+    const deleteBtn = item.querySelector('.conversation-delete-btn');
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteConversation(conversation.id);
+    });
+
+    conversationList.appendChild(item);
+  }
+
+  // Remove conversation from sidebar
+  function removeConversationFromSidebar(id) {
+    const conversationList = document.getElementById('conversation-list');
+    if (!conversationList) return;
+
+    const item = conversationList.querySelector(`[data-id="${id}"]`);
+    if (item) {
+      item.remove();
+    }
+  }
+
+  // Switch conversation
+  async function switchConversation(id) {
+    try {
+      const conversations = await invoke('get_conversations');
+      const conv = conversations.find(c => c.id === id);
+      
+      if (conv) {
+        const models = await invoke('get_models');
+        const model = models.find(m => m.id === conv.model_id);
+        
+        if (model) {
+          // Navigate to conversation page
+          const webview = document.getElementById('webview');
+          webview.src = 'conversation.html';
+          
+          // Store current conversation ID in localStorage
+          localStorage.setItem('currentConversationId', id);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to switch conversation:', error);
+      alert('切换会话失败：' + error);
+    }
+  }
+
+  // Delete conversation
+  async function deleteConversation(id) {
+    if (confirm('确定要删除这个会话吗？')) {
+      try {
+        await invoke('delete_conversation', { id });
+        alert('会话已删除');
+      } catch (error) {
+        console.error('Failed to delete conversation:', error);
+        alert('删除会话失败：' + error);
+      }
+    }
+  }
+
+  // Load conversations to sidebar
+  async function loadConversationsToSidebar() {
+    try {
+      const conversations = await invoke('get_conversations');
+      conversations.forEach(conv => addConversationToSidebar(conv));
+    } catch (error) {
+      console.error('Failed to load conversations:', error);
+    }
+  }
 }
 
 // Setup basic functionality without Tauri API
 function setupBasicFunctionality() {
   console.log('Setting up basic functionality without Tauri API...');
   
-  // Get iframe element
-  const webview = document.getElementById('webview');
-  const sidebar = document.getElementById('sidebar');
-  const barContainer = document.getElementById('bar-container');
-  
-  // Get AI model buttons
-  const kimiButton = document.getElementById('kimi');
-  const doubaoButton = document.getElementById('doubao');
-  const tyqwButton = document.getElementById('tyqw');
-  const tenxunButton = document.getElementById('tenxun');
-  const openaiButton = document.getElementById('openai');
-  const googleButton = document.getElementById('google');
-  const wxyyButton = document.getElementById('wxyy');
-  const poeButton = document.getElementById('poe');
-  const deepseekButton = document.getElementById('deepseek');
-  const claudeButton = document.getElementById('claude');
-  const manusButton = document.getElementById('manus');
-  const grokButton = document.getElementById('grok');
-  const copilotButton = document.getElementById('copilot');
-  const metaButton = document.getElementById('meta');
-  const perplexityButton = document.getElementById('perplexity');
-  const deeplButton = document.getElementById('deepl');
-  const youdaoButton = document.getElementById('youdaoranslator');
-  const sciencepalButton = document.getElementById('sciencepal');
-  const bingButton = document.getElementById('bing');
-  
-  // Set button click event listeners, load web pages
-  deepseekButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://chat.deepseek.com/");
-  });
-  
-  kimiButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://kimi.moonshot.cn/");
-  });
-  
-  doubaoButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://www.doubao.com/");
-  });
-  
-  tyqwButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://www.tongyi.com/");
-  });
-  
-  tenxunButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://yuanbao.tencent.com/chat/");
-  });
-  
-  openaiButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://chatgpt.com/");
-  });
-  
-  googleButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://gemini.google.com/");
-  });
-  
-  wxyyButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://yiyan.baidu.com/");
-  });
-  
-  poeButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://poe.com/");
-  });
-  
-  claudeButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://claude.ai/");
-  });
-  
-  manusButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://manus.im/");
-  });
-  
-  grokButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://x.ai/grok");
-  });
-  
-  copilotButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://copilot.microsoft.com/");
-  });
-  
-  metaButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://www.meta.ai/");
-  });
-  
-  perplexityButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://www.perplexity.ai/");
-  });
-  
-  deeplButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://www.deepl.com/");
-  });
-  
-  youdaoButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://fanyi.youdao.com/#/TextTranslate");
-  });
-  
-  sciencepalButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://sciencepal.ai/");
-  });
-  
-  bingButton.addEventListener('click', function() {
-    webview.setAttribute('src', "https://www.bing.com/");
-  });
-  
-  // Get settings buttons
-  const homeBtn = document.getElementById('home-btn');
-  const setProxyBtn = document.getElementById('set-proxy-btn');
+  const newConversationBtn = document.getElementById('new-conversation-btn');
+  const modelSettingsBtn = document.getElementById('model-settings-btn');
+  const networkSettingsBtn = document.getElementById('network-settings-btn');
+  const versionInfoBtn = document.getElementById('version-info-btn');
   const manualBtn = document.getElementById('manual-btn');
-  const versionBtn = document.getElementById('version-btn');
-  const browserButton = document.getElementById('browser-btn');
-  const closeBtn = document.getElementById('close-btn');
-  
-  // Listen to button click events, load specified html
-  homeBtn.addEventListener('click', () => {
-    webview.src = 'second.html';
+  const closeAppBtn = document.getElementById('close-app-btn');
+
+  newConversationBtn.addEventListener('click', () => {
+    alert('由于 Tauri API 不可用，无法创建新会话。\n请使用 Tauri 构建的应用以获得完整功能。');
   });
-  
-  manualBtn.addEventListener('click', async () => {
-    alert('由于 Tauri API 不可用，无法打开用户手册。\n请使用 Tauri 构建的应用以获得完整功能。');
+
+  modelSettingsBtn.addEventListener('click', () => {
+    window.location.href = 'model-settings.html';
   });
-  
-  // Add click event, show error message
-  setProxyBtn.addEventListener('click', async () => {
+
+  networkSettingsBtn.addEventListener('click', () => {
     alert('由于 Tauri API 不可用，无法打开网络设置。\n请使用 Tauri 构建的应用以获得完整功能。');
   });
-  
-  // Add click event, show error message
-  versionBtn.addEventListener('click', async () => {
+
+  versionInfoBtn.addEventListener('click', () => {
     alert('由于 Tauri API 不可用，无法打开版本信息。\n请使用 Tauri 构建的应用以获得完整功能。');
   });
-  
-  browserButton.addEventListener('click', async function () {
-    alert('由于 Tauri API 不可用，无法使用会话分身功能。\n请使用 Tauri 构建的应用以获得完整功能。');
+
+  manualBtn.addEventListener('click', () => {
+    alert('由于 Tauri API 不可用，无法打开用户手册。\n请使用 Tauri 构建的应用以获得完整功能。');
   });
-  
-  // Close application button
-  if (closeBtn) {
-    closeBtn.addEventListener('click', async () => {
-      if (window.__TAURI__) {
-        await window.__TAURI__.window.close();
-      } else {
-        window.close();
-      }
-    });
-  }
+
+  closeAppBtn.addEventListener('click', () => {
+    if (window.__TAURI__) {
+      window.__TAURI__.window.close();
+    } else {
+      window.close();
+    }
+  });
   
   console.log('Basic functionality setup complete.');
 }

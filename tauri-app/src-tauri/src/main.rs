@@ -4,17 +4,40 @@
 use std::sync::Arc;
 use std::sync::Mutex;
 use tauri::{Emitter, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, Window};
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Model {
+    pub id: String,
+    pub name: String,
+    pub provider: String,
+    pub url: String,
+    pub icon: String,
+    pub enabled: bool,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Conversation {
+    pub id: String,
+    pub name: String,
+    pub model_id: String,
+    pub created_at: String,
+}
 
 #[derive(Clone)]
 struct AppState {
     detached_windows: Arc<Mutex<Vec<WebviewWindow>>>,
     proxy_address: Arc<Mutex<Option<String>>>,
+    conversations: Arc<Mutex<Vec<Conversation>>>,
+    models: Arc<Mutex<Vec<Model>>>,
 }
 
 fn main() {
     let state = AppState {
         detached_windows: Arc::new(Mutex::new(Vec::new())),
         proxy_address: Arc::new(Mutex::new(None)),
+        conversations: Arc::new(Mutex::new(Vec::new())),
+        models: Arc::new(Mutex::new(get_default_models())),
     };
 
     tauri::Builder::default()
@@ -24,6 +47,8 @@ fn main() {
             if let Some(proxy) = load_proxy_settings() {
                 set_system_proxy(&proxy);
             }
+            // Load saved data
+            load_saved_data(&_app);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -33,10 +58,235 @@ fn main() {
             open_version_dialog,
             detach_webview,
             restore_sidebar,
-            close_window
+            close_window,
+            // Conversation management
+            create_conversation,
+            delete_conversation,
+            get_conversations,
+            // Model management
+            get_models,
+            update_model,
+            save_models,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+fn get_default_models() -> Vec<Model> {
+    vec![
+        Model {
+            id: "deepseek".to_string(),
+            name: "DeepSeek".to_string(),
+            provider: "深度求索".to_string(),
+            url: "https://chat.deepseek.com/".to_string(),
+            icon: "assets/deepseek.svg".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "tyqw".to_string(),
+            name: "通义千问".to_string(),
+            provider: "阿里".to_string(),
+            url: "https://www.tongyi.com/".to_string(),
+            icon: "assets/tyqw.png".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "doubao".to_string(),
+            name: "豆包".to_string(),
+            provider: "字节".to_string(),
+            url: "https://www.doubao.com/".to_string(),
+            icon: "assets/doubao.png".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "tenxun".to_string(),
+            name: "元宝".to_string(),
+            provider: "腾讯".to_string(),
+            url: "https://yuanbao.tencent.com/chat/".to_string(),
+            icon: "assets/tenxun.png".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "kimi".to_string(),
+            name: "Kimi".to_string(),
+            provider: "月之暗面".to_string(),
+            url: "https://kimi.moonshot.cn/".to_string(),
+            icon: "assets/kimi.ico".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "openai".to_string(),
+            name: "ChatGPT".to_string(),
+            provider: "OpenAI".to_string(),
+            url: "https://chatgpt.com/".to_string(),
+            icon: "assets/chatgpt.ico".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "google".to_string(),
+            name: "Gemini".to_string(),
+            provider: "Google".to_string(),
+            url: "https://gemini.google.com/".to_string(),
+            icon: "assets/google.png".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "claude".to_string(),
+            name: "Claude".to_string(),
+            provider: "Anthropic".to_string(),
+            url: "https://claude.ai/".to_string(),
+            icon: "assets/claude.png".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "poe".to_string(),
+            name: "Poe".to_string(),
+            provider: "Quora".to_string(),
+            url: "https://poe.com/".to_string(),
+            icon: "assets/poe.svg".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "manus".to_string(),
+            name: "Manus".to_string(),
+            provider: "蝴蝶效应".to_string(),
+            url: "https://manus.im/".to_string(),
+            icon: "assets/manus.ico".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "grok".to_string(),
+            name: "Grok".to_string(),
+            provider: "xAI".to_string(),
+            url: "https://x.ai/grok".to_string(),
+            icon: "assets/grok.ico".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "meta".to_string(),
+            name: "Meta AI".to_string(),
+            provider: "Meta".to_string(),
+            url: "https://www.meta.ai/".to_string(),
+            icon: "assets/meta.ico".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "perplexity".to_string(),
+            name: "Perplexity".to_string(),
+            provider: "Perplexity".to_string(),
+            url: "https://www.perplexity.ai/".to_string(),
+            icon: "assets/perplexity.ico".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "copilot".to_string(),
+            name: "Copilot".to_string(),
+            provider: "Microsoft".to_string(),
+            url: "https://copilot.microsoft.com/".to_string(),
+            icon: "assets/copilot.ico".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "wxyy".to_string(),
+            name: "文心一言".to_string(),
+            provider: "百度".to_string(),
+            url: "https://yiyan.baidu.com/".to_string(),
+            icon: "assets/wxyy.ico".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "deepl".to_string(),
+            name: "DeepL".to_string(),
+            provider: "DeepL".to_string(),
+            url: "https://www.deepl.com/".to_string(),
+            icon: "assets/deepl.png".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "youdao".to_string(),
+            name: "有道翻译".to_string(),
+            provider: "网易".to_string(),
+            url: "https://fanyi.youdao.com/#/TextTranslate".to_string(),
+            icon: "assets/youdao.ico".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "sciencepal".to_string(),
+            name: "Sciencepal".to_string(),
+            provider: "Sciencepal".to_string(),
+            url: "https://sciencepal.ai/".to_string(),
+            icon: "assets/sciencepal.png".to_string(),
+            enabled: true,
+        },
+        Model {
+            id: "bing".to_string(),
+            name: "Bing".to_string(),
+            provider: "Microsoft".to_string(),
+            url: "https://www.bing.com/".to_string(),
+            icon: "assets/bing.ico".to_string(),
+            enabled: true,
+        },
+    ]
+}
+
+fn load_saved_data(window: &Window) {
+    use std::fs;
+    use dirs::data_local_dir;
+
+    if let Some(mut data_dir) = data_local_dir() {
+        data_dir.push("Ai Talk");
+        let _ = std::fs::create_dir_all(&data_dir);
+
+        // Load conversations
+        let conversations_file = data_dir.join("conversations.json");
+        if let Ok(content) = fs::read_to_string(&conversations_file) {
+            if let Ok(convs) = serde_json::from_str::<Vec<Conversation>>(&content) {
+                let mut state = window.state::<AppState>();
+                *state.conversations.lock().unwrap() = convs;
+                println!("Loaded {} conversations", convs.len());
+            }
+        }
+
+        // Load models
+        let models_file = data_dir.join("models.json");
+        if let Ok(content) = fs::read_to_string(&models_file) {
+            if let Ok(mods) = serde_json::from_str::<Vec<Model>>(&content) {
+                let mut state = window.state::<AppState>();
+                *state.models.lock().unwrap() = mods;
+                println!("Loaded {} models", mods.len());
+            }
+        }
+    }
+}
+
+fn save_conversations(conversations: &Vec<Conversation>) {
+    use std::fs;
+    use dirs::data_local_dir;
+
+    if let Some(mut data_dir) = data_local_dir() {
+        data_dir.push("Ai Talk");
+        let _ = std::fs::create_dir_all(&data_dir);
+        data_dir.push("conversations.json");
+
+        if let Ok(json) = serde_json::to_string_pretty(conversations) {
+            fs::write(&data_dir, json).ok();
+        }
+    }
+}
+
+fn save_models_to_file(models: &Vec<Model>) {
+    use std::fs;
+    use dirs::data_local_dir;
+
+    if let Some(mut data_dir) = data_local_dir() {
+        data_dir.push("Ai Talk");
+        let _ = std::fs::create_dir_all(&data_dir);
+        data_dir.push("models.json");
+
+        if let Ok(json) = serde_json::to_string_pretty(models) {
+            fs::write(&data_dir, json).ok();
+        }
+    }
 }
 
 fn load_proxy_settings() -> Option<String> {
@@ -227,4 +477,99 @@ fn restore_sidebar(window: Window) {
 #[tauri::command]
 async fn close_window(window: Window) {
     window.close().ok();
+}
+
+// ==================== Conversation Management Commands ====================
+
+// Create a new conversation
+#[tauri::command]
+fn create_conversation(
+    window: Window,
+    name: String,
+    model_id: String,
+    state: tauri::State<AppState>
+) -> Result<Conversation, String> {
+    use std::time::SystemTime;
+
+    let conversation = Conversation {
+        id: format!("conv-{}", SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()),
+        name,
+        model_id,
+        created_at: chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+    };
+
+    let mut conversations = state.conversations.lock().unwrap();
+    conversations.push(conversation.clone());
+
+    // Save to file
+    save_conversations(&conversations);
+
+    // Emit event
+    window.emit("conversation-created", conversation.clone()).ok();
+
+    Ok(conversation)
+}
+
+// Delete a conversation
+#[tauri::command]
+fn delete_conversation(
+    window: Window,
+    id: String,
+    state: tauri::State<AppState>
+) {
+    let mut conversations = state.conversations.lock().unwrap();
+    conversations.retain(|c| c.id != id);
+
+    // Save to file
+    save_conversations(&conversations);
+
+    // Emit event
+    window.emit("conversation-deleted", id).ok();
+}
+
+// Get all conversations
+#[tauri::command]
+fn get_conversations(state: tauri::State<AppState>) -> Vec<Conversation> {
+    state.conversations.lock().unwrap().clone()
+}
+
+// ==================== Model Management Commands ====================
+
+// Get all models
+#[tauri::command]
+fn get_models(state: tauri::State<AppState>) -> Vec<Model> {
+    state.models.lock().unwrap().clone()
+}
+
+// Update model (enable/disable)
+#[tauri::command]
+fn update_model(
+    window: Window,
+    id: String,
+    enabled: bool,
+    state: tauri::State<AppState>
+) {
+    let mut models = state.models.lock().unwrap();
+    if let Some(model) = models.iter_mut().find(|m| m.id == id) {
+        model.enabled = enabled;
+    }
+
+    // Save to file
+    save_models_to_file(&models);
+
+    // Emit event
+    window.emit("model-updated", (id, enabled)).ok();
+}
+
+// Save models configuration
+#[tauri::command]
+fn save_models(window: Window, models: Vec<Model>, state: tauri::State<AppState>) {
+    let mut current_models = state.models.lock().unwrap();
+    *current_models = models.clone();
+
+    // Save to file
+    save_models_to_file(&models);
+
+    // Emit event
+    window.emit("models-saved", ()).ok();
 }

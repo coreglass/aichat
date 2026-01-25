@@ -186,47 +186,151 @@ button span.icon-text {
   color: #333;
 }
 
-/* 设置选项列表 */
-.settings-list {
-  width: 100%;
-  height: 235px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  /* overflow-y: auto; 允许垂直滚动 */
-  padding: 10px;
-  /* border-bottom: 1px solid #e0e0e0; 给对话区域添加底部边框 */
+/* 新会话按钮 */
+.new-conversation-section {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 20px;
 }
 
-.settings-item {
+.new-conversation-btn {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  padding: 0px;
-  border-radius: 4px;
-  background-color: #f9f9f9;
-  margin-bottom: 10px;
+  gap: 8px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.new-conversation-btn:hover {
+  background-color: #0056b3;
+  transform: scale(1.02);
+}
+
+.new-conversation-btn .icon-plus {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* 会话列表 */
+.conversation-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.conversation-item {
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  padding: 12px 16px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
 }
 
-.settings-item:hover {
-  background-color: #f0f0f0;
-  transform: translateX(5px);
+.conversation-item:hover {
+  background-color: #e3f2fd;
+  border-color: #007bff;
+  transform: translateX(4px);
 }
 
-.settings-item img {
-  width: 15px;
-  height: 15px;
-  margin-right: 15px;
+.conversation-item.active {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #0056b3;
 }
 
-.settings-item .setting-text {
-  font-size: 13px;
-  color: #333;
+.conversation-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.settings-item:hover .setting-text {
-  color: #007BFF; /* 鼠标悬停时文字颜色变更 */
+.conversation-delete-btn {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.conversation-item:hover .conversation-delete-btn {
+  opacity: 1;
+}
+
+.conversation-delete-btn:hover {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+/* 模型设置按钮 */
+.model-settings-section {
+  margin-bottom: 10px;
+}
+
+.model-settings-btn {
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.model-settings-btn:hover {
+  background-color: #5a6268;
+  transform: scale(1.02);
+}
+
+/* 其他设置 */
+.other-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.close-btn {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background-color: #c82333;
 }
 
 /* 设置区域边框样式 */

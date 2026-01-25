@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>模型设置</title>
+  <link rel="stylesheet" href="css/model-settings.css">
+</head>
+<body>
+  <div class="settings-container">
+    <div class="header">
+      <h1>模型设置</h1>
+      <button class="close-btn" id="close-btn">
+        <img src="assets/version.svg" alt="关闭" class="icon">
+      </button>
+    </div>
+
+    <div class="model-list-container">
+      <div class="model-list" id="model-list">
+        <!-- 模型列表将通过 JS 动态添加 -->
+      </div>
+    </div>
+
+    <div class="footer">
+      <button class="reset-btn" id="reset-btn">恢复默认</button>
+      <button class="save-btn" id="save-btn">保存设置</button>
+    </div>
+  </div>
+
+  <script src="js/model-settings.js"></script>
+</body>
+</html>
