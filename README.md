@@ -3,7 +3,6 @@
 > 🤖 一款集合了多种大语言模型应用的开源桌面客户端
 
 ![Version](https://img.shields.io/badge/version-1.0.2-blue)
-![License](https://img.shields.io/badge/license-GPL--3.0-green)
 
 ## 📌 项目介绍
 
