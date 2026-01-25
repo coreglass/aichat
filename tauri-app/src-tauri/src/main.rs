@@ -42,13 +42,13 @@ fn main() {
 
     tauri::Builder::default()
         .manage(state)
-        .setup(|_app| {
+        .setup(|app| {
             // Load saved proxy settings
             if let Some(proxy) = load_proxy_settings() {
                 set_system_proxy(&proxy);
             }
             // Load saved data
-            load_saved_data(&_app);
+            load_saved_data(&app);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -229,7 +229,7 @@ fn get_default_models() -> Vec<Model> {
     ]
 }
 
-fn load_saved_data(window: &Window) {
+fn load_saved_data(app: &tauri::App) {
     use std::fs;
     use dirs::data_local_dir;
 
@@ -241,8 +241,9 @@ fn load_saved_data(window: &Window) {
         let conversations_file = data_dir.join("conversations.json");
         if let Ok(content) = fs::read_to_string(&conversations_file) {
             if let Ok(convs) = serde_json::from_str::<Vec<Conversation>>(&content) {
-                let mut state = window.state::<AppState>();
-                *state.conversations.lock().unwrap() = convs;
+                let mut state = app.state::<AppState>();
+                let convs_clone = convs.clone();
+                *state.conversations.lock().unwrap() = convs_clone;
                 println!("Loaded {} conversations", convs.len());
             }
         }
@@ -251,8 +252,9 @@ fn load_saved_data(window: &Window) {
         let models_file = data_dir.join("models.json");
         if let Ok(content) = fs::read_to_string(&models_file) {
             if let Ok(mods) = serde_json::from_str::<Vec<Model>>(&content) {
-                let mut state = window.state::<AppState>();
-                *state.models.lock().unwrap() = mods;
+                let mut state = app.state::<AppState>();
+                let mods_clone = mods.clone();
+                *state.models.lock().unwrap() = mods_clone;
                 println!("Loaded {} models", mods.len());
             }
         }
