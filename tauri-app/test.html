@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ai Talk - 测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 20px;
+      background: #1a1a1a;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    h1 {
+      font-size: 24px;
+      color: #42b883;
+      margin-bottom: 20px;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      background: #42b883;
+      color: white;
+    }
+    button:hover {
+      background: #357bd4;
+    }
+    #status {
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-family: monospace;
+    }
+    #sidebar {
+      width: 320px;
+      background: #f4f4f4;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .sidebar button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      background: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .sidebar button:hover {
+      background: #e8e8e8;
+    }
+  </style>
+</head>
+<body>
+  <div style="display: flex; gap: 20px; height: 100vh; box-sizing: border-box; padding: 20px;">
+    <!-- 左侧边栏 -->
+    <div id="sidebar">
+      <div style="margin-bottom: 30px;">
+        <img src="assets/logo.png" alt="Logo" style="width: 50px; height: 50px; margin-bottom: 10px;">
+        <h1 style="color: white; margin: 0;">Ai Talk</h1>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: white; margin: 0 0 0 10px;">AI 模型</h2>
+        <button onclick="testAPI()">测试 Tauri API</button>
+        <button onclick="testInvoke()">测试 Invoke 命令</button>
+        <button onclick="testDeepSeek()">DeepSeek</button>
+        <button onclick="testChatGPT()">ChatGPT</button>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h2 style="color: white; margin: 0 0 10px;">设置</h2>
+        <button onclick="testProxy()">代理设置</button>
+        <button onclick="testCloseWindow()">关闭窗口</button>
+      </div>
+    </div>
+
+    <!-- 右侧内容区 -->
+    <div style="flex: 1; background: white; border-radius: 8px; padding: 20px; overflow: auto;">
+      <h2 style="color: #42b883; margin: 0 0 10px;">内容区域</h2>
+      <div id="status">等待测试...</div>
+      <iframe id="webview" src="second.html" style="width: 100%; height: 100%; border: none;"></iframe>
+    </div>
+  </div>
+
+  <script>
+    // 测试 Tauri API 是否可用
+    function testAPI() {
+      const status = document.getElementById('status');
+      status.innerHTML = '检查 Tauri API...';
+
+      try {
+        if (window.__TAURI__) {
+          status.innerHTML = '✅ Tauri API 可用！<br><br>API 对象: ' + JSON.stringify(window.__TAURI__);
+          status.style.color = '#10b981';
+        } else {
+          status.innerHTML = '❌ Tauri API 不可用<br><br>window.__TAURI__ = ' + typeof window.__TAURI__;
+          status.style.color = '#ff6b6b';
+        }
+      } catch (e) {
+        status.innerHTML = '❌ 检查出错: ' + e.message;
+        status.style.color = '#ff6b6b';
+      }
+    }
+
+    // 测试 invoke 命令
+    function testInvoke() {
+      const status = document.getElementById('status');
+      status.innerHTML = '测试 invoke...';
+
+      window.__TAURI__.core.invoke('close_window').then(() => {
+        status.innerHTML = '✅ Invoke 成功！<br>已调用 close_window';
+        status.style.color = '#10b981';
+      }).catch((e) => {
+        status.innerHTML = '❌ Invoke 失败<br>错误: ' + e;
+        status.style.color = '#ff6b6b';
+      });
+    }
+
+    // 测试 DeepSeek 按钮
+    function testDeepSeek() {
+      const webview = document.getElementById('webview');
+      webview.setAttribute('src', 'https://chat.deepseek.com/');
+      const status = document.getElementById('status');
+      status.innerHTML = '加载 DeepSeek...';
+      status.style.color = '#10b981';
+    }
+
+    // 测试 ChatGPT 按钮
+    function testChatGPT() {
+      const webview = document.getElementById('webview');
+      webview.setAttribute('src', 'https://chatgpt.com/');
+      const status = document.getElementById('status');
+      status.innerHTML = '加载 ChatGPT...';
+      status.style.color = '#10b981';
+    }
+
+    // 测试代理设置窗口
+    function testProxy() {
+      window.__TAURI__.core.invoke('open_proxy_dialog').then(() => {
+        const status = document.getElementById('status');
+        status.innerHTML = '✅ 代理窗口应该已打开<br>调用了 open_proxy_dialog';
+        status.style.color = '#10b981';
+      }).catch((e) => {
+        const status = document.getElementById('status');
+        status.innerHTML = '❌ 失败<br>错误: ' + e;
+        status.style.color = '#ff6b6b';
+      });
+    }
+
+    // 测试关闭窗口
+    function testCloseWindow() {
+      try {
+        if (window.__TAURI__) {
+          await window.__TAURI__.window.close();
+          const status = document.getElementById('status');
+          status.innerHTML = '✅ 窗口已关闭<br>使用了 window.close()';
+          status.style.color = '#10b981';
+        } else {
+          const status = document.getElementById('status');
+          status.innerHTML = '❌ window.__TAURI__ 不存在';
+          status.style.color = '#ff6b6b';
+        }
+      } catch (e) {
+        const status = document.getElementById('status');
+        status.innerHTML = '❌ 关闭失败<br>错误: ' + e;
+        status.style.color = '#ff6b6b';
+      }
+    }
+
+    // 监听 Tauri API 初始化
+    if (window.__TAURI__) {
+      window.__TAURI__.event.listen('tauri://ready', () => {
+        const status = document.getElementById('status');
+        status.innerHTML = '✅ Tauri 已准备好！<br>窗口已加载完成';
+        status.style.color = '#10b981';
+      });
+    }
+  </script>
+</body>
+</html>

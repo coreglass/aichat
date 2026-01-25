@@ -1,0 +1,21 @@
+{
+  "name": "ai-talk-tauri",
+  "version": "1.0.2",
+  "description": "Ai Talk - A desktop client for multiple AI services",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.1.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0",
+    "fs-extra": "^11.3.3",
+    "vite": "^5.0.0"
+  }
+}
