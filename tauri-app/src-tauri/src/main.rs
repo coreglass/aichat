@@ -19,7 +19,7 @@ fn main() {
 
     tauri::Builder::default()
         .manage(state)
-        .setup(|app| {
+        .setup(|_app| {
             // Load saved proxy settings
             if let Some(proxy) = load_proxy_settings() {
                 set_system_proxy(&proxy);

@@ -49,8 +49,7 @@
       "wix": {
         "language": "zh-CN"
       }
-    },
-    "identifier": "com.aitalk.app"
+    }
   },
   "plugins": {}
 }
