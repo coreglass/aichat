@@ -7,59 +7,66 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div id="container">
+  <div id="app">
     <!-- 左侧边栏 -->
     <div id="sidebar">
-      <!-- logo -->
-      <div class="logo">
-        <img src="assets/logo.png" alt="Logo">
-        <h1 class="app_name">Ai Talk</h1>
+      <!-- Logo -->
+      <div class="logo-section">
+        <img src="assets/logo.png" alt="Logo" class="logo-img">
+        <h1 class="app-name">Ai Talk</h1>
       </div>
 
       <!-- 新会话按钮 -->
-      <div class="new-conversation-section">
-        <button id="new-conversation-btn" class="new-conversation-btn">
-          <span class="icon-plus">+</span> 新会话
-        </button>
-      </div>
+      <button id="new-conversation-btn" class="new-conversation-btn">
+        <span class="plus-icon">+</span>
+        <span class="btn-text">新会话</span>
+      </button>
 
       <!-- 会话列表 -->
-      <div class="conversation-list" id="conversation-list">
+      <div id="conversation-list" class="conversation-list">
         <!-- 会话项将通过 JS 动态添加 -->
       </div>
 
-      <!-- 模型设置按钮 -->
-      <div class="model-settings-section">
-        <button id="model-settings-btn" class="model-settings-btn">
-          <img src="assets/network.svg" alt="设置" class="icon-img"> 模型设置
-        </button>
-      </div>
+      <!-- 分隔线 -->
+      <div class="separator"></div>
 
-      <!-- 其他设置 -->
-      <div class="other-settings">
-        <button id="network-settings-btn">
-          <img src="assets/network.svg" alt="网络" class="icon-img"> 网络设置
-        </button>
-        <button id="version-info-btn">
-          <img src="assets/version.svg" alt="版本" class="icon-img"> 关于程序
-        </button>
-        <button id="manual-btn">
-          <img src="assets/manual.svg" alt="手册" class="icon-img"> 用户手册
-        </button>
-        <button id="close-app-btn" class="close-btn">
-          ✕ 关闭应用
-        </button>
-      </div>
+      <!-- 模型设置按钮 -->
+      <button id="model-settings-btn" class="settings-btn model-btn">
+        <img src="assets/network.svg" alt="设置" class="btn-icon">
+        <span class="btn-text">模型设置</span>
+      </button>
+
+      <!-- 网络设置 -->
+      <button id="network-btn" class="settings-btn">
+        <img src="assets/network.svg" alt="网络" class="btn-icon">
+        <span class="btn-text">网络设置</span>
+      </button>
+
+      <!-- 关于程序 -->
+      <button id="about-btn" class="settings-btn">
+        <img src="assets/version.svg" alt="版本" class="btn-icon">
+        <span class="btn-text">关于程序</span>
+      </button>
+
+      <!-- 用户手册 -->
+      <button id="manual-btn" class="settings-btn">
+        <img src="assets/manual.svg" alt="手册" class="btn-icon">
+        <span class="btn-text">用户手册</span>
+      </button>
+
+      <!-- 关闭应用 -->
+      <button id="close-btn" class="close-btn">
+        <span class="close-icon">✕</span>
+        <span class="btn-text">关闭应用</span>
+      </button>
     </div>
 
-    <!-- 右边显示区域 -->
+    <!-- 右侧内容区 -->
     <div id="content">
-      <!-- 主页面 iframe -->
-      <iframe id="webview" src="conversation.html" style="width: 100%; height: 100vh; border: none;"></iframe>
+      <iframe id="main-iframe" src="conversation.html"></iframe>
     </div>
   </div>
 
-  <!--- 引入渲染进程文件 js/renderer-tauri.js -->
-  <script src="js/renderer-tauri.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>

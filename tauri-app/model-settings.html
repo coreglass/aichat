@@ -7,23 +7,30 @@
   <link rel="stylesheet" href="css/model-settings.css">
 </head>
 <body>
-  <div class="settings-container">
-    <div class="header">
-      <h1>模型设置</h1>
-      <button class="close-btn" id="close-btn">
-        <img src="assets/version.svg" alt="关闭" class="icon">
+  <div id="settings-app">
+    <!-- 顶部栏 -->
+    <div class="settings-header">
+      <h1 class="settings-title">模型设置</h1>
+      <button id="close-btn" class="close-header-btn">
+        <span class="close-icon">✕</span>
       </button>
     </div>
 
-    <div class="model-list-container">
-      <div class="model-list" id="model-list">
-        <!-- 模型列表将通过 JS 动态添加 -->
-      </div>
+    <!-- 模型列表 -->
+    <div id="model-list" class="model-list-container">
+      <!-- 模型列表将通过 JS 动态添加 -->
     </div>
 
-    <div class="footer">
-      <button class="reset-btn" id="reset-btn">恢复默认</button>
-      <button class="save-btn" id="save-btn">保存设置</button>
+    <!-- 底部操作栏 -->
+    <div class="settings-footer">
+      <button id="reset-btn" class="action-btn reset-btn">
+        <span class="btn-icon">↺</span>
+        <span class="btn-text">恢复默认</span>
+      </button>
+      <button id="save-btn" class="action-btn save-btn">
+        <span class="btn-icon">💾</span>
+        <span class="btn-text">保存设置</span>
+      </button>
     </div>
   </div>
 

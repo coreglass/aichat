@@ -7,47 +7,54 @@
   <link rel="stylesheet" href="css/conversation.css">
 </head>
 <body>
-  <div class="conversation-container">
+  <div id="conversation-app">
+    <!-- 顶部栏 -->
     <div class="header">
-      <h1>我的会话</h1>
-      <div class="actions">
-        <button id="model-selector-btn" class="model-selector-btn">
+      <div class="header-content">
+        <h1 class="title">我的会话</h1>
+        <button id="model-selector-btn" class="model-selector">
           <span id="current-model-name">选择模型</span>
-          <span class="icon">▼</span>
+          <span class="dropdown-arrow">▼</span>
         </button>
       </div>
     </div>
 
-    <div class="conversation-tabs" id="conversation-tabs">
+    <!-- 会话标签 -->
+    <div id="conversation-tabs" class="conversation-tabs">
       <!-- 会话标签将通过 JS 动态添加 -->
     </div>
 
-    <div class="conversation-content" id="conversation-content">
-      <div class="empty-state" id="empty-state">
-        <img src="assets/dialogue.svg" alt="空状态" class="empty-icon">
-        <p>还没有会话，点击左侧"新会话"按钮创建一个</p>
+    <!-- 内容区 -->
+    <div id="conversation-content" class="conversation-content">
+      <!-- 空状态 -->
+      <div id="empty-state" class="empty-state">
+        <img src="assets/dialogue.svg" alt="空" class="empty-icon">
+        <p class="empty-text">还没有会话，点击左侧"新会话"按钮创建一个</p>
       </div>
 
-      <div class="conversation-panel" id="conversation-panel" style="display: none;">
-        <iframe id="model-webview" style="width: 100%; height: 100%; border: none;"></iframe>
+      <!-- 模型 webview -->
+      <div id="webview-container" class="webview-container" style="display: none;">
+        <iframe id="model-webview" class="model-webview"></iframe>
       </div>
     </div>
-  </div>
 
-  <!-- 模型选择弹窗 -->
-  <div class="model-selector-modal" id="model-selector-modal" style="display: none;">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>选择模型</h2>
-        <button class="close-btn" id="close-model-modal">×</button>
-      </div>
-      <div class="modal-body">
-        <div class="model-list" id="model-list">
-          <!-- 模型列表将通过 JS 动态添加 -->
+    <!-- 模型选择弹窗 -->
+    <div id="model-modal" class="model-modal" style="display: none;">
+      <div class="modal-overlay" id="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">选择模型</h2>
+          <button class="close-modal-btn" id="close-modal">✕</button>
         </div>
-        <div class="modal-actions">
-          <button class="action-btn" id="open-model-settings-btn">
-            <img src="assets/network.svg" alt="设置" class="icon"> 模型设置
+        <div class="modal-body">
+          <div id="model-list" class="model-list">
+            <!-- 模型列表将通过 JS 动态添加 -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="open-model-settings-btn" class="settings-link-btn">
+            <img src="assets/network.svg" alt="设置" class="btn-icon-small">
+            <span>模型设置</span>
           </button>
         </div>
       </div>

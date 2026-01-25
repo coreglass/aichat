@@ -1,4 +1,3 @@
-/* 模型设置页面样式 */
 * {
   margin: 0;
   padding: 0;
@@ -6,195 +5,237 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
   background-color: #f5f5f5;
 }
 
-.settings-container {
+/* 设置应用容器 */
+#settings-app {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  width: 100%;
+  height: 100vh;
 }
 
 /* 顶部栏 */
-.header {
-  background-color: #fff;
-  padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
+.settings-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.header h1 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #333;
+.settings-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #ffffff;
   margin: 0;
 }
 
-.header .close-btn {
-  background: none;
+.close-header-btn {
+  background: rgba(255, 255, 255, 0.2);
   border: none;
-  padding: 8px;
+  color: #ffffff;
   cursor: pointer;
-  color: #999;
-  transition: color 0.3s ease;
-  display: flex;
-  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
 }
 
-.header .close-btn:hover {
-  color: #333;
+.close-header-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
 
-.header .close-btn .icon {
-  width: 20px;
-  height: 20px;
+.close-icon {
+  font-size: 18px;
 }
 
 /* 模型列表容器 */
 .model-list-container {
   flex: 1;
-  padding: 20px;
+  padding: 30px;
   overflow-y: auto;
 }
 
 .model-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
 }
 
 /* 模型项 */
 .model-item {
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  padding: 16px;
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .model-item:hover {
-  border-color: #007bff;
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+  border-color: #667eea;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.2);
 }
 
 .model-item.disabled {
-  opacity: 0.5;
-  background-color: #f5f5f5;
+  opacity: 0.4;
+  background: #f8f9fa;
 }
 
-.model-item .model-icon {
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
+.model-icon {
+  width: 48px;
+  height: 48px;
 }
 
-.model-item .model-info {
+.model-info {
   flex: 1;
 }
 
-.model-item .model-name {
-  font-size: 16px;
-  font-weight: 600;
+.model-name {
+  font-size: 18px;
+  font-weight: bold;
   color: #333;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
-.model-item .model-provider {
-  font-size: 13px;
+.model-provider {
+  font-size: 14px;
   color: #666;
 }
 
-.model-item .model-toggle {
-  flex-shrink: 0;
-}
-
 .model-toggle {
-  position: relative;
-  width: 48px;
-  height: 24px;
+  margin-left: auto;
 }
 
-.model-toggle input {
+.toggle-switch {
+  position: relative;
+  width: 56px;
+  height: 28px;
+}
+
+.toggle-switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-.toggle-label {
+.toggle-slider {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #ccc;
-  border-radius: 12px;
+  top: 4px;
+  left: 4px;
+  width: 48px;
+  height: 20px;
+  background-color: #e9ecef;
+  border-radius: 14px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-.toggle-label::after {
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #4caf50;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
   content: '';
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 20px;
-  height: 20px;
-  background-color: #fff;
+  width: 16px;
+  height: 16px;
+  background-color: #ffffff;
   border-radius: 50%;
+  transform: translateX(28px);
   transition: transform 0.3s ease;
 }
 
-.model-toggle input:checked + .toggle-label {
-  background-color: #4caf50;
-}
-
-.model-toggle input:checked + .toggle-label::after {
-  transform: translateX(24px);
-}
-
 /* 底部操作栏 */
-.footer {
-  background-color: #fff;
-  padding: 20px;
-  border-top: 1px solid #e0e0e0;
+.settings-footer {
+  background: #ffffff;
+  padding: 20px 30px;
+  border-top: 1px solid #e9ecef;
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  justify-content: center;
+  gap: 16px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.reset-btn,
-.save-btn {
-  padding: 10px 24px;
-  border-radius: 6px;
+.action-btn {
+  padding: 12px 32px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   transition: all 0.3s ease;
 }
 
 .reset-btn {
-  background-color: #6c757d;
-  color: #fff;
-  border: none;
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
 }
 
 .reset-btn:hover {
-  background-color: #5a6268;
+  background: #e9ecef;
 }
 
 .save-btn {
-  background-color: #007bff;
-  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
   border: none;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .save-btn:hover {
-  background-color: #0056b3;
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.action-btn .btn-icon {
+  font-size: 16px;
+}
+
+/* 关闭按钮 */
+.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  color: #333;
+  background-color: #f8f9fa;
+}
+
+.close-icon {
+  font-size: 14px;
+}
+
+/* 滚动条 */
+.model-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.model-list-container::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+.model-list-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
 }

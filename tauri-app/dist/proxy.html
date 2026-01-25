@@ -1,79 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>代理设置</title>
+  <title>网络设置</title>
   <link rel="stylesheet" href="css/proxy.css">
 </head>
 <body>
-  <div class="container">
-    <h1>
-      <img src="assets/network.svg" alt="设置" class="icon"> 设置代理
-    </h1>
+  <div id="proxy-app">
+    <div class="proxy-container">
+      <h1 class="proxy-title">代理设置</h1>
+      
+      <div class="proxy-input-group">
+        <label for="proxy-address" class="proxy-label">
+          <span class="label-icon">🌐</span>
+          <span class="label-text">代理地址</span>
+        </label>
+        <input 
+          type="text" 
+          id="proxy-address" 
+          class="proxy-input"
+          placeholder="例如：http://127.0.0.1:7890"
+        >
+      </div>
 
-    <input type="text" id="proxy-input" placeholder="请输入代理地址,例：http://127.0.0.1:7890">
-    <button id="set-proxy-btn">设置代理</button>
-    <button id="clear-proxy-btn">清除代理</button>
-    <button id="cancel">关闭</button>
+      <div class="proxy-actions">
+        <button id="set-proxy-btn" class="action-btn primary-btn">
+          <span class="btn-icon">✓</span>
+          <span class="btn-text">设置代理</span>
+        </button>
+        <button id="clear-proxy-btn" class="action-btn secondary-btn">
+          <span class="btn-icon">✗</span>
+          <span class="btn-text">清除代理</span>
+        </button>
+      </div>
+    </div>
+
+    <button id="close-btn" class="close-btn">
+      <span class="close-icon">✕</span>
+      <span class="btn-text">关闭</span>
+    </button>
   </div>
 
-  <script>
-    const proxyInput = document.getElementById('proxy-input');
-    const setProxyBtn = document.getElementById('set-proxy-btn');
-    const clearProxyBtn = document.getElementById('clear-proxy-btn');
-    const cancelButton = document.getElementById('cancel');
-
-    // Load saved proxy on start
-    document.addEventListener('DOMContentLoaded', async () => {
-      if (window.__TAURI__) {
-        try {
-          // Try to load saved proxy from file (this would need a new command)
-          // For now, just show a placeholder
-          proxyInput.placeholder = '请输入代理地址,例：http://127.0.0.1:7890';
-        } catch (error) {
-          console.error('Error loading proxy:', error);
-        }
-      }
-    });
-
-    // 设置代理
-    setProxyBtn.addEventListener('click', async () => {
-      const proxyAddress = proxyInput.value.trim();
-      if (proxyAddress) {
-        try {
-          await window.__TAURI__.core.invoke('set_proxy', { proxyAddress });
-          alert('代理已设置！\n\n注意：代理设置已保存，但可能需要重启应用才能完全生效。');
-          await window.__TAURI__.window.getCurrent().close();
-        } catch (error) {
-          alert('设置代理失败: ' + error);
-        }
-      } else {
-        alert('请输入代理地址');
-      }
-    });
-
-    // 清除代理
-    clearProxyBtn.addEventListener('click', async () => {
-      if (confirm('确定要清除代理设置吗？')) {
-        try {
-          await window.__TAURI__.core.invoke('clear_proxy');
-          alert('代理已清除！\n\n注意：可能需要重启应用才能完全生效。');
-          await window.__TAURI__.window.getCurrent().close();
-        } catch (error) {
-          alert('清除代理失败: ' + error);
-        }
-      }
-    });
-
-    // 关闭窗口
-    cancelButton.addEventListener('click', async () => {
-      if (window.__TAURI__) {
-        await window.__TAURI__.window.getCurrent().close();
-      } else {
-        window.close();
-      }
-    });
-  </script>
+  <script src="js/proxy.js"></script>
 </body>
 </html>

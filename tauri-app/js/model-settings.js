@@ -1,126 +1,90 @@
-document.addEventListener('DOMContentLoaded', function() {
-  // Wait for Tauri API
-  const waitForTauri = (callback, maxAttempts = 50, interval = 200) => {
-    let attempts = 0;
-    
-    const checkTauri = () => {
-      attempts++;
-      if (window.__TAURI__) {
-        console.log('Tauri API loaded!');
-        callback();
-      } else if (attempts < maxAttempts) {
-        setTimeout(checkTauri, interval);
-      }
-    };
-    
-    checkTauri();
-  };
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 
-  waitForTauri(() => {
-    const { invoke } = window.__TAURI__.core;
-    
-    // State
-    let models = [];
-    let originalModels = [];
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('Model settings page initialized');
 
-    // DOM Elements
-    const modelList = document.getElementById('model-list');
-    const closeBtn = document.getElementById('close-btn');
-    const resetBtn = document.getElementById('reset-btn');
-    const saveBtn = document.getElementById('save-btn');
+  // 状态
+  let models = [];
 
-    // Load models
-    async function loadModels() {
-      try {
-        models = await invoke('get_models');
-        originalModels = JSON.parse(JSON.stringify(models));
-        renderModelList();
-      } catch (error) {
-        console.error('Failed to load models:', error);
-      }
+  // DOM 元素
+  const modelList = document.getElementById('model-list');
+  const resetBtn = document.getElementById('reset-btn');
+  const saveBtn = document.getElementById('save-btn');
+  const closeBtn = document.getElementById('close-btn');
+
+  // 加载数据
+  async function loadData() {
+    try {
+      models = await invoke('get_models');
+      console.log('Loaded models:', models.length);
+      renderModelList();
+    } catch (error) {
+      console.error('Failed to load data:', error);
+      alert('加载数据失败：' + error);
     }
+  }
 
-    // Render model list
-    function renderModelList() {
-      modelList.innerHTML = '';
+  // 渲染模型列表
+  function renderModelList() {
+    modelList.innerHTML = '';
+    
+    models.forEach(model => {
+      const item = document.createElement('div');
+      item.className = `model-item ${model.enabled ? '' : 'disabled'}`;
+      item.innerHTML = `
+        <img src="${model.icon}" alt="${model.name}" class="model-icon">
+        <div class="model-info">
+          <div class="model-name">${model.name}</div>
+          <div class="model-provider">${model.provider}</div>
+        </div>
+        <div class="model-toggle">
+          <label class="toggle-switch">
+            <input type="checkbox" id="model-${model.id}" ${model.enabled ? 'checked' : ''}>
+            <div class="toggle-slider"></div>
+          </label>
+        </div>
+      `;
       
-      models.forEach(model => {
-        const item = document.createElement('div');
-        item.className = `model-item ${model.enabled ? '' : 'disabled'}`;
-        item.innerHTML = `
-          <img src="${model.icon}" alt="${model.name}" class="model-icon">
-          <div class="model-info">
-            <div class="model-name">${model.name}</div>
-            <div class="model-provider">${model.provider}</div>
-          </div>
-          <div class="model-toggle">
-            <input type="checkbox" id="toggle-${model.id}" ${model.enabled ? 'checked' : ''}>
-            <label for="toggle-${model.id}" class="toggle-label"></label>
-          </div>
-        `;
-        
-        // Toggle enabled/disabled
-        const toggle = item.querySelector('input');
-        toggle.addEventListener('change', () => {
-          updateModel(model.id, toggle.checked);
-        });
-        
-        modelList.appendChild(item);
+      // 切换启用状态
+      const checkbox = item.querySelector(`#model-${model.id}`);
+      checkbox.addEventListener('change', () => {
+        model.enabled = checkbox.checked;
       });
-    }
-
-    // Update model status
-    async function updateModel(id, enabled) {
-      try {
-        await invoke('update_model', { id, enabled });
-        const index = models.findIndex(m => m.id === id);
-        if (index !== -1) {
-          models[index].enabled = enabled;
-          renderModelList();
-        }
-      } catch (error) {
-        console.error('Failed to update model:', error);
-      }
-    }
-
-    // Save all models
-    async function saveModels() {
-      try {
-        await invoke('save_models', { models });
-        alert('模型设置已保存！');
-      } catch (error) {
-        console.error('Failed to save models:', error);
-        alert('保存失败：' + error);
-      }
-    }
-
-    // Reset to default
-    async function resetModels() {
-      if (confirm('确定要恢复默认设置吗？')) {
-        try {
-          // Load default models
-          const defaultModels = await invoke('get_models');
-          // This will give us the defaults
-          await invoke('save_models', { models: defaultModels });
-          // Reload
-          await loadModels();
-          alert('已恢复默认设置！');
-        } catch (error) {
-          console.error('Failed to reset models:', error);
-          alert('恢复失败：' + error);
-        }
-      }
-    }
-
-    // Event Listeners
-    closeBtn.addEventListener('click', () => {
-      window.location.href = 'index.html';
+      
+      modelList.appendChild(item);
     });
+  }
 
-    saveBtn.addEventListener('click', saveModels);
-    resetBtn.addEventListener('click', resetModels);
-
-    // Load initial data
-    loadModels();
+  // 恢复默认
+  resetBtn.addEventListener('click', async () => {
+    if (confirm('确定要恢复默认设置吗？')) {
+      try {
+        // 重新加载默认模型
+        window.location.reload();
+      } catch (error) {
+        console.error('Failed to reset:', error);
+        alert('恢复失败：' + error);
+      }
+    }
   });
+
+  // 保存设置
+  saveBtn.addEventListener('click', async () => {
+    try {
+      await invoke('save_models', { models });
+      alert('模型设置已保存！');
+    } catch (error) {
+      console.error('Failed to save:', error);
+      alert('保存失败：' + error);
+    }
+  });
+
+  // 关闭
+  closeBtn.addEventListener('click', () => {
+    window.location.href = 'index.html';
+  });
+
+  // 初始化加载数据
+  loadData();
 });
