@@ -26,6 +26,12 @@ export default defineConfig({
         // Copy JS directory
         await fs.copy(path.resolve('js'), path.resolve(distDir, 'js'))
         
+        // Copy CSS directory
+        await fs.copy(path.resolve('css'), path.resolve(distDir, 'css'))
+        
+        // Copy assets directory
+        await fs.copy(path.resolve('assets'), path.resolve(distDir, 'assets'))
+        
         // Copy HTML files
         await fs.copy(path.resolve('about.html'), path.resolve(distDir, 'about.html'))
         await fs.copy(path.resolve('proxy.html'), path.resolve(distDir, 'proxy.html'))

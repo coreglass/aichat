@@ -4,16 +4,36 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
+    icon: process.platform === 'darwin' ? 'assets/logo.icns' : 'assets/logo.ico',
   },
   rebuildConfig: {},
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
-      config: {},
+      config: {
+        icon: 'assets/logo.ico',
+        setupIcon: 'assets/logo.ico',
+        name: 'Ai_Talk',
+        noMsi: false,
+        title: 'Ai_Talk Installer',
+        setupExe: 'Ai_Talk_Setup.exe',
+        extraResources: [
+          {
+            from: 'assets/',
+            to: 'assets/',
+          },
+        ],
+      },
     },
     {
       name: '@electron-forge/maker-zip',
-      platforms: ['darwin'],
+      platforms: ['darwin', 'win32'],
+    },
+    {
+      name: '@electron-forge/maker-dmg',
+      config: {
+        icon: 'assets/logo.icns',
+      },
     },
     {
       name: '@electron-forge/maker-deb',

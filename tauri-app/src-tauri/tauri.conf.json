@@ -6,7 +6,6 @@
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
     "devUrl": "http://localhost:5173",
-    "frontendDist": "../dist",
     "frontendDist": "../dist"
   },
   "app": {
@@ -20,12 +19,19 @@
         "center": true,
         "decorations": true,
         "alwaysOnTop": false,
-        "skipTaskbar": false
+        "skipTaskbar": false,
+        "minWidth": 800,
+        "minHeight": 600
       }
     ],
     "security": {
-      "csp": null
-    }
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
+    },
+    "withGlobalTauri": false
   },
   "bundle": {
     "active": true,
@@ -33,13 +39,18 @@
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
-      "icons/logo.ico"
+      "icons/icon.icns",
+      "icons/icon.ico"
     ],
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
-      "timestampUrl": ""
-    }
+      "timestampUrl": "",
+      "wix": {
+        "language": "zh-CN"
+      }
+    },
+    "identifier": "com.aitalk.app"
   },
   "plugins": {}
 }

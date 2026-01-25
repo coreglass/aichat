@@ -14,6 +14,23 @@
       },
       "makers": [
         {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "icon": "assets/logo.ico",
+            "setupIcon": "assets/logo.ico",
+            "name": "Ai_Talk",
+            "noMsi": false,
+            "title": "Ai_Talk Installer",
+            "setupExe": "Ai_Talk_Setup.exe",
+            "extraResources": [
+              {
+                "from": "assets/",
+                "to": "assets/"
+              }
+            ]
+          }
+        },
+        {
           "name": "@electron-forge/maker-dmg",
           "config": {
             "icon": "assets/logo.icns"
@@ -23,9 +40,18 @@
           "name": "@electron-forge/maker-zip",
           "config": {
             "platforms": [
-              "darwin"
+              "darwin",
+              "win32"
             ]
           }
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
         }
       ]
     }

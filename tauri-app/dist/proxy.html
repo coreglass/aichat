@@ -24,12 +24,30 @@
     const clearProxyBtn = document.getElementById('clear-proxy-btn');
     const cancelButton = document.getElementById('cancel');
 
+    // Load saved proxy on start
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (window.__TAURI__) {
+        try {
+          // Try to load saved proxy from file (this would need a new command)
+          // For now, just show a placeholder
+          proxyInput.placeholder = '请输入代理地址,例：http://127.0.0.1:7890';
+        } catch (error) {
+          console.error('Error loading proxy:', error);
+        }
+      }
+    });
+
     // 设置代理
     setProxyBtn.addEventListener('click', async () => {
       const proxyAddress = proxyInput.value.trim();
       if (proxyAddress) {
-        await window.__TAURI__.core.invoke('set_proxy', { proxyAddress });
-        alert('代理已设置，请重启应用使设置生效');
+        try {
+          await window.__TAURI__.core.invoke('set_proxy', { proxyAddress });
+          alert('代理已设置！\n\n注意：代理设置已保存，但可能需要重启应用才能完全生效。');
+          await window.__TAURI__.window.getCurrent().close();
+        } catch (error) {
+          alert('设置代理失败: ' + error);
+        }
       } else {
         alert('请输入代理地址');
       }
@@ -37,13 +55,24 @@
 
     // 清除代理
     clearProxyBtn.addEventListener('click', async () => {
-      await window.__TAURI__.core.invoke('clear_proxy');
-      alert('代理已清除，请重启应用使设置生效');
+      if (confirm('确定要清除代理设置吗？')) {
+        try {
+          await window.__TAURI__.core.invoke('clear_proxy');
+          alert('代理已清除！\n\n注意：可能需要重启应用才能完全生效。');
+          await window.__TAURI__.window.getCurrent().close();
+        } catch (error) {
+          alert('清除代理失败: ' + error);
+        }
+      }
     });
 
     // 关闭窗口
     cancelButton.addEventListener('click', async () => {
-      await window.__TAURI__.core.invoke('close_window');
+      if (window.__TAURI__) {
+        await window.__TAURI__.window.getCurrent().close();
+      } else {
+        window.close();
+      }
     });
   </script>
 </body>

@@ -43,8 +43,18 @@
 
     <!-- 关闭按钮 -->
     <footer class="version-footer">
-      <button onclick="window.close()" aria-label="关闭版本信息窗口">关闭</button>
+      <button id="close-btn" aria-label="关闭版本信息窗口">关闭</button>
     </footer>
+
+    <script>
+      document.getElementById('close-btn').addEventListener('click', async () => {
+        if (window.__TAURI__) {
+          await window.__TAURI__.window.getCurrent().close();
+        } else {
+          window.close();
+        }
+      });
+    </script>
   </div>
 </body>
 </html>

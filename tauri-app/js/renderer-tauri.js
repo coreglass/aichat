@@ -388,14 +388,3 @@ function setupBasicFunctionality() {
   
   console.log('Basic functionality setup complete.');
 }
-        // Fallback: try to close using window API
-        if (window.__TAURI__) {
-          await window.__TAURI__.window.close();
-        } else {
-          // Last resort: use browser close
-          window.close();
-        }
-      }
-    });
-  }
-});
