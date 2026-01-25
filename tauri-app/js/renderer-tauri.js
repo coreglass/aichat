@@ -162,7 +162,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
   /**************** 测边栏设置按钮事件规则 *****************/
   // Get "Back to Home" button
   const homeBtn = document.getElementById('home-btn');
@@ -185,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
     await open('assets/Readme.pdf');
   });
 
-  // Add click event, send request openProxyDialog
+  // Add click event, send openProxyDialog
   setProxyBtn.addEventListener('click', async () => {
     await invoke('open_proxy_dialog');
   });
