@@ -25,14 +25,16 @@ let providers = [
     name: '智谱AI',
     apiKey: '',
     endpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
-    models: ['glm-4-plus', 'glm-4', 'glm-4-flash', 'glm-4-air', 'glm-4-0520', 'glm-4-alltools', 'glm-4-0111', 'glm-4-long']
+    models: ['glm-4-plus', 'glm-4', 'glm-4-flash', 'glm-4-air', 'glm-4-0520', 'glm-4-alltools', 'glm-4-0111', 'glm-4-long'],
+    enabled: true
   },
   {
     id: 'gemini',
     name: 'Gemini',
     apiKey: '',
     endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent',
-    models: ['gemini-2.0-flash-exp', 'gemini-1.5-pro', 'gemini-1.5-flash']
+    models: ['gemini-2.0-flash-exp', 'gemini-1.5-pro', 'gemini-1.5-flash'],
+    enabled: true
   }
 ];
 let streamingAbortController = null;
@@ -56,6 +58,10 @@ const providersBtn = document.getElementById('providers-btn');
 const aboutBtn = document.getElementById('about-btn');
 const translatorBtn = document.getElementById('translator-btn');
 
+// DOM Elements - Sidebar
+const sidebar = document.getElementById('sidebar');
+const sidebarResizer = document.getElementById('sidebar-resizer');
+
 // DOM Elements - Settings
 const fontSizeSelect = document.getElementById('font-size');
 const bgColorSelect = document.getElementById('bg-color');
@@ -75,10 +81,18 @@ const sourceLangSelect = document.getElementById('source-lang');
 const targetLangSelect = document.getElementById('target-lang');
 const translatorModelSelect = document.getElementById('translator-model');
 
-// DOM Elements - Confirm Dialog
+// DOM Elements - Dialogs
 const confirmDialog = document.getElementById('confirm-dialog');
 const confirmOkBtn = document.getElementById('confirm-ok');
 const confirmCancelBtn = document.getElementById('confirm-cancel');
+const alertDialog = document.getElementById('alert-dialog');
+const alertOkBtn = document.getElementById('alert-ok');
+const alertMessage = document.getElementById('alert-message');
+const promptDialog = document.getElementById('prompt-dialog');
+const promptTitle = document.getElementById('prompt-title');
+const promptInput = document.getElementById('prompt-input');
+const promptOkBtn = document.getElementById('prompt-ok');
+const promptCancelBtn = document.getElementById('prompt-cancel');
 
 // Constants
 const DEFAULT_ENDPOINT = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
@@ -87,6 +101,9 @@ const MAX_TRANSLATION_CHARS = 5000;
 
 // Resizable input state
 let isResizing = false;
+
+// Sidebar resize state
+let isSidebarResizing = false;
 let startY = 0;
 let startHeight = 0;
 
@@ -106,7 +123,17 @@ async function init() {
   applySettings();
   renderConversationList();
   renderProviders();
+  renderProviderDetail();
   setupEventListeners();
+
+  // Initialize sidebar width from saved state
+  const savedWidth = localStorage.getItem('sidebarWidth');
+  if (savedWidth) {
+    const width = parseInt(savedWidth);
+    if (width >= 200 && width <= 500) {
+      sidebar.style.width = width + 'px';
+    }
+  }
 }
 
 // View Navigation
@@ -177,6 +204,8 @@ function applySettings() {
 }
 
 // Providers
+let selectedProviderId = 'zhipu';
+
 async function loadProviders() {
   try {
     const saved = localStorage.getItem('ai-chat-providers');
@@ -192,49 +221,116 @@ function saveProviders() {
   localStorage.setItem('ai-chat-providers', JSON.stringify(providers));
 }
 
+function getProviderIconClass(providerId) {
+  if (providerId === 'zhipu') return 'zhipu';
+  if (providerId === 'gemini') return 'gemini';
+  return 'custom';
+}
+
 function renderProviders() {
-  providersList.innerHTML = providers.map(provider => `
-    <div class="provider-card">
-      <div class="provider-card-header">
-        <div class="provider-name">${provider.name}</div>
-        <div class="provider-actions">
-          <button class="btn-secondary" onclick="editProvider('${provider.id}')">编辑</button>
-          ${provider.id !== 'zhipu' ? `<button class="btn-secondary" onclick="deleteProvider('${provider.id}')">删除</button>` : ''}
-        </div>
+  const searchTerm = document.getElementById('provider-search-input')?.value?.toLowerCase() || '';
+
+  const filteredProviders = providers.filter(p =>
+    p.name.toLowerCase().includes(searchTerm)
+  );
+
+  providersList.innerHTML = filteredProviders.map(provider => `
+    <div class="provider-list-item ${provider.id === selectedProviderId ? 'active' : ''}"
+         onclick="selectProvider('${provider.id}')">
+      <div class="provider-item-icon ${getProviderIconClass(provider.id)}">
+        ${provider.name.charAt(0).toUpperCase()}
       </div>
-      <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
-        ${provider.endpoint || '未设置Endpoint'}
-      </div>
-      <div class="provider-models">
-        ${provider.models.map(model => `<span class="model-tag">${model}</span>`).join('')}
+      <div class="provider-item-info">
+        <div class="provider-item-name">${provider.name}</div>
+        <div class="provider-item-endpoint">${provider.endpoint || '未设置Endpoint'}</div>
       </div>
     </div>
   `).join('');
+}
+
+window.selectProvider = function(providerId) {
+  selectedProviderId = providerId;
+  renderProviders();
+  renderProviderDetail();
+};
+
+function renderProviderDetail() {
+  const provider = providers.find(p => p.id === selectedProviderId);
+  if (!provider) return;
+
+  // Update header
+  document.getElementById('detail-provider-name').textContent = provider.name;
+  document.getElementById('detail-provider-enabled').checked = provider.enabled !== false;
+
+  // Update API key
+  document.getElementById('detail-api-key').value = provider.apiKey || '';
+
+  // Update endpoint
+  document.getElementById('detail-endpoint').value = provider.endpoint || '';
+
+  // Update models list
+  const modelsList = document.getElementById('detail-models-list');
+  if (provider.models && provider.models.length > 0) {
+    modelsList.innerHTML = provider.models.map(model => `
+      <div class="model-card">
+        <div class="model-card-icon">
+          ${provider.name.charAt(0)}
+        </div>
+        <div class="model-card-info">
+          <div class="model-card-name">${model}</div>
+          <div class="model-card-id">${model}</div>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    modelsList.innerHTML = '<div style="color: var(--text-secondary); padding: 20px; text-align: center;">暂无模型</div>';
+  }
 }
 
 window.editProvider = function(providerId) {
   const provider = providers.find(p => p.id === providerId);
   if (!provider) return;
 
-  const newApiKey = prompt('输入 API Key:', provider.apiKey || '');
-  if (newApiKey !== null) {
-    provider.apiKey = newApiKey;
+  const newName = prompt('修改模型商名称:', provider.name);
+  if (newName && newName !== provider.name) {
+    provider.name = newName;
+    saveProviders();
+    renderProviders();
+    if (selectedProviderId === providerId) {
+      renderProviderDetail();
+    }
   }
-
-  const newEndpoint = prompt('输入 Endpoint:', provider.endpoint || '');
-  if (newEndpoint !== null) {
-    provider.endpoint = newEndpoint;
-  }
-
-  saveProviders();
-  renderProviders();
 };
 
 window.deleteProvider = function(providerId) {
   if (confirm('确认删除此模型商?')) {
     providers = providers.filter(p => p.id !== providerId);
+
+    if (selectedProviderId === providerId) {
+      selectedProviderId = providers[0]?.id || null;
+    }
+
     saveProviders();
     renderProviders();
+    renderProviderDetail();
+  }
+};
+
+window.copyProviderApiKey = function() {
+  const apiKey = document.getElementById('detail-api-key').value;
+  if (apiKey) {
+    navigator.clipboard.writeText(apiKey).then(() => {
+      alert('已复制API密钥');
+    });
+  }
+};
+
+window.copyProviderEndpoint = function() {
+  const endpoint = document.getElementById('detail-endpoint').value;
+  if (endpoint) {
+    navigator.clipboard.writeText(endpoint).then(() => {
+      alert('已复制API地址');
+    });
   }
 };
 
@@ -277,6 +373,8 @@ async function selectConversation(id) {
     chatTitle.textContent = conversation.title;
     renderMessages();
     renderConversationList();
+    // 自动切换到聊天视图
+    switchView('chat');
   }
 }
 
@@ -767,13 +865,91 @@ function renderConversationList() {
   `).join('');
 }
 
-function showConfirmDialog() {
+// Unified Dialog Functions
+function showConfirmDialog(message, onConfirm) {
   confirmDialog.classList.remove('hidden');
+  setTimeout(() => {
+    confirmDialog.classList.add('visible');
+  }, 10);
+
+  // Update message if provided
+  if (message) {
+    const dialogMessage = confirmDialog.querySelector('.dialog-message');
+    if (dialogMessage) {
+      dialogMessage.textContent = message;
+    }
+  }
+
+  // Store callback
+  confirmDialog._onConfirm = onConfirm;
 }
 
 function hideConfirmDialog() {
-  confirmDialog.classList.add('hidden');
+  confirmDialog.classList.remove('visible');
+  setTimeout(() => {
+    confirmDialog.classList.add('hidden');
+  }, 300);
 }
+
+function showAlertDialog(message, onOk) {
+  alertMessage.textContent = message;
+  alertDialog.classList.remove('hidden');
+  setTimeout(() => {
+    alertDialog.classList.add('visible');
+  }, 10);
+
+  alertDialog._onOk = onOk;
+}
+
+function hideAlertDialog() {
+  alertDialog.classList.remove('visible');
+  setTimeout(() => {
+    alertDialog.classList.add('hidden');
+  }, 300);
+}
+
+function showPromptDialog(title, placeholder, defaultValue, onOk, onCancel) {
+  promptTitle.textContent = title;
+  promptInput.placeholder = placeholder || '请输入...';
+  promptInput.value = defaultValue || '';
+
+  promptDialog.classList.remove('hidden');
+  setTimeout(() => {
+    promptDialog.classList.add('visible');
+    promptInput.focus();
+  }, 10);
+
+  promptDialog._onOk = onOk;
+  promptDialog._onCancel = onCancel;
+}
+
+function hidePromptDialog() {
+  promptDialog.classList.remove('visible');
+  setTimeout(() => {
+    promptDialog.classList.add('hidden');
+  }, 300);
+}
+
+// Override native dialogs
+window.alert = function(message) {
+  showAlertDialog(message);
+};
+
+window.confirm = function(message) {
+  let result = false;
+  showConfirmDialog(message, () => {
+    result = true;
+  });
+  return result;
+};
+
+window.prompt = function(message, defaultValue) {
+  let result = null;
+  showPromptDialog(message, '请输入...', defaultValue || '', (value) => {
+    result = value;
+  });
+  return result;
+};
 
 // Translation
 async function performTranslation() {
@@ -884,6 +1060,34 @@ function setupEventListeners() {
     createNewConversation();
   });
 
+  // Sidebar resize
+  sidebarResizer.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isSidebarResizing = true;
+    sidebarResizer.classList.add('resizing');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isSidebarResizing) return;
+
+    const newWidth = e.clientX;
+    if (newWidth >= 200 && newWidth <= 500) {
+      sidebar.style.width = newWidth + 'px';
+      localStorage.setItem('sidebarWidth', newWidth);
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isSidebarResizing) {
+      isSidebarResizing = false;
+      sidebarResizer.classList.remove('resizing');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  });
+
   // Settings
   fontSizeSelect.addEventListener('change', (e) => {
     settings.fontSize = parseInt(e.target.value);
@@ -957,6 +1161,49 @@ function setupEventListeners() {
     }
   });
 
+  // Alert dialog events
+  alertOkBtn.addEventListener('click', () => {
+    if (alertDialog._onOk) {
+      alertDialog._onOk();
+    }
+    hideAlertDialog();
+  });
+
+  alertDialog.addEventListener('click', (e) => {
+    if (e.target === alertDialog) {
+      hideAlertDialog();
+    }
+  });
+
+  // Prompt dialog events
+  promptOkBtn.addEventListener('click', () => {
+    const value = promptInput.value;
+    if (promptDialog._onOk) {
+      promptDialog._onOk(value);
+    }
+    hidePromptDialog();
+  });
+
+  promptCancelBtn.addEventListener('click', () => {
+    if (promptDialog._onCancel) {
+      promptDialog._onCancel();
+    }
+    hidePromptDialog();
+  });
+
+  promptDialog.addEventListener('click', (e) => {
+    if (e.target === promptDialog) {
+      hidePromptDialog();
+    }
+  });
+
+  // Enter key for prompt dialog
+  promptInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      promptOkBtn.click();
+    }
+  });
+
   // Translator
   translateBtn.addEventListener('click', performTranslation);
 
@@ -996,13 +1243,68 @@ function setupEventListeners() {
       name,
       apiKey: '',
       endpoint,
-      models: []
+      models: [],
+      enabled: true
     };
 
     providers.push(newProvider);
+    selectedProviderId = newProvider.id;
     saveProviders();
     renderProviders();
+    renderProviderDetail();
   });
+
+  // Provider search
+  const providerSearchInput = document.getElementById('provider-search-input');
+  if (providerSearchInput) {
+    providerSearchInput.addEventListener('input', () => {
+      renderProviders();
+    });
+  }
+
+  // Provider detail inputs
+  const detailApiKey = document.getElementById('detail-api-key');
+  const detailEndpoint = document.getElementById('detail-endpoint');
+  const detailEnabled = document.getElementById('detail-provider-enabled');
+
+  if (detailApiKey) {
+    detailApiKey.addEventListener('change', (e) => {
+      const provider = providers.find(p => p.id === selectedProviderId);
+      if (provider) {
+        provider.apiKey = e.target.value;
+        saveProviders();
+      }
+    });
+  }
+
+  if (detailEndpoint) {
+    detailEndpoint.addEventListener('change', (e) => {
+      const provider = providers.find(p => p.id === selectedProviderId);
+      if (provider) {
+        provider.endpoint = e.target.value;
+        saveProviders();
+        renderProviders();
+      }
+    });
+  }
+
+  if (detailEnabled) {
+    detailEnabled.addEventListener('change', (e) => {
+      const provider = providers.find(p => p.id === selectedProviderId);
+      if (provider) {
+        provider.enabled = e.target.checked;
+        saveProviders();
+      }
+    });
+  }
+
+  // Edit provider name button
+  const editNameBtn = document.getElementById('edit-provider-name-btn');
+  if (editNameBtn) {
+    editNameBtn.addEventListener('click', () => {
+      window.editProvider(selectedProviderId);
+    });
+  }
 }
 
 // Make functions globally available
