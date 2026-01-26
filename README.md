@@ -1,211 +1,163 @@
-# Ai Talk - 桌面客户端项目
+# AI Chat Client
 
-> 🤖 一款集合了多种大语言模型应用的开源桌面客户端
+一个现代化的AI聊天客户端，支持多种大模型和自定义API endpoint。
 
-![Version](https://img.shields.io/badge/version-1.0.2-blue)
+![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Tauri](https://img.shields.io/badge/Tauri-2.1.0-FFC131)
+![Rust](https://img.shields.io/badge/Rust-1.74+-orange)
 
-## 📌 项目介绍
+## ✨ 主要功能
 
-本项目包含两个版本：
+### 🤖 多模型支持
+- **智谱AI**: GLM-4系列模型（GLM-4-Plus、GLM-4、GLM-4-Flash、GLM-4-Air等）
+- **Gemini**: Gemini 2.0 Flash、Gemini 1.5 Pro、Gemini 1.5 Flash
+- **自定义模型商**: 支持添加任意兼容OpenAI格式的API endpoint
 
-1. **Electron 版本** - 原始版本，使用 Electron 构建
-2. **Tauri 版本** - 重写版本，使用 Tauri 构建（推荐）
+### 💬 聊天功能
+- 实时流式输出，无需等待完整响应
+- 完整的Markdown渲染支持
+- 代码高亮和一键复制
+- 对话历史管理
+- Token使用统计
+- 精确的时间戳显示
+- 停止生成功能（带确认对话框）
 
-## 🚀 快速开始
+### 🎨 界面定制
+- 字体大小调节（小/中/大/特大）
+- 深色/浅色主题切换
+- 自定义用户头像
+- 界面语言选择（简体中文/English）
+- 可拖动调整输入框高度
 
-### 推荐：使用 Tauri 版本
+### 🌐 翻译助手
+- 支持多种语言互译
+- AI自动检测源语言
+- 流式翻译输出
+- 可选择翻译使用的模型
+- 支持的语言：中文、英语、日语、韩语、法语、德语、西班牙语
 
-Tauri 版本具有更小的体积和更好的性能。
+### ⌨️ 输入增强
+- Alt+Enter 插入换行
+- 字符计数器（聊天: 50000字符，翻译: 5000字符）
+- 可拖动调整输入框大小
 
-```bash
-# 进入 Tauri 项目目录
-cd tauri-app
+## 🛠️ 技术栈
 
-# Windows 用户
-build.bat
+- **前端框架**: Tauri 2.x
+- **后端语言**: Rust
+- **构建工具**: Vite
+- **JavaScript**: Vanilla ES6+
+- **Markdown渲染**: Marked.js
+- **数据存储**: localStorage
 
-# Linux/macOS 用户
-./build.sh
-```
+## 📦 安装与运行
 
-详细说明请查看 [tauri-app/QUICKSTART.md](tauri-app/QUICKSTART.md)
-
-### 使用 Electron 版本
+### 开发环境
 
 ```bash
 # 安装依赖
 npm install
 
-# 开发模式
-npm start
-
-# 构建安装包
-npm run build
+# 启动开发服务器
+npm run tauri dev
 ```
 
-## 📊 版本对比
+### 生产构建
 
-| 特性 | Electron 版本 | Tauri 版本 |
-|------|-------------|-----------|
-| 安装包大小 | ~150 MB | ~15 MB |
-| 内存占用 | ~200 MB | ~50 MB |
-| 启动速度 | ~3s | ~1s |
-| 性能 | 中等 | 高 |
-
-**推荐使用 Tauri 版本！** 🎯
-
-## 📁 项目结构
-
-```
-aichat/
-├── tauri-app/              # Tauri 版本（推荐）
-│   ├── src-tauri/          # Rust 后端
-│   ├── assets/             # 静态资源
-│   ├── css/                # 样式文件
-│   ├── js/                 # JavaScript 文件
-│   ├── *.html              # HTML 页面
-│   ├── build.bat           # Windows 构建脚本
-│   ├── build.sh            # Linux/macOS 构建脚本
-│   ├── README.md           # Tauri 版本文档
-│   ├── QUICKSTART.md       # 快速开始
-│   ├── README-BUILD.md     # 构建指南
-│   └── MIGRATION-SUMMARY.md # 迁移总结
-│
-├── src/                    # Electron 版本源码
-│   ├── js/                 # JavaScript 文件
-│   ├── css/                # 样式文件
-│   └── view/               # HTML 页面
-│
-├── assets/                 # 共享资源
-│   ├── logo.png            # Logo
-│   ├── logo.ico            # Windows 图标
-│   ├── logo.icns           # macOS 图标
-│   ├── *.svg               # SVG 图标
-│   └── Readme.pdf          # 用户手册
-│
-├── main.js                 # Electron 主进程
-├── package.json            # Node.js 配置
-├── forge.config.js         # Electron Forge 配置
-└── README.md               # 项目主文档
-```
-
-## 🤖 支持的 AI 服务
-
-- DeepSeek（深度求索）
-- 通义千问（阿里）
-- 豆包（字节）
-- 元宝（腾讯）
-- Kimi（月之暗面）
-- ChatGPT（OpenAI）
-- Google Gemini
-- Claude（Anthropic）
-- Poe
-- Manus（蝴蝶效应）
-- Grok（xAI）
-- Meta AI
-- Perplexity
-- Copilot（Microsoft）
-- 文心一言（百度）
-- DeepL 翻译
-- 有道翻译
-- Bing 搜索
-
-## ✨ 核心功能
-
-### 1. AI 模型集成
-快速切换到不同的 AI 服务，无需打开多个浏览器标签页。
-
-### 2. 会话分身
-将当前会话分离到独立窗口，支持多窗口同时使用。
-
-### 3. 网络设置
-自定义代理设置，支持自动保存和恢复。
-
-### 4. 用户手册
-内置详细的 PDF 使用说明。
-
-### 5. 跨平台支持
-Windows、macOS、Linux 全平台支持。
-
-## 📖 文档
-
-### Tauri 版本文档
-- [快速开始](tauri-app/QUICKSTART.md)
-- [构建指南](tauri-app/README-BUILD.md)
-- [迁移总结](tauri-app/MIGRATION-SUMMARY.md)
-- [项目总结](tauri-app/PROJECT-SUMMARY.md)
-
-### Electron 版本文档
-- 查看 README.md（本文件）
-- [项目文档](./)
-
-## 🎯 推荐使用 Tauri 版本的原因
-
-1. **更小的体积**: 安装包仅 15MB，相比 Electron 版本减小 90%
-2. **更好的性能**: 内存占用降低 75%，启动速度提升 67%
-3. **更低的资源占用**: CPU 占用显著降低
-4. **更现代的技术栈**: 使用 Rust 和 Tauri 2.x
-
-## 🛠️ 技术栈
-
-### Electron 版本
-- Electron 33.x
-- Node.js
-- Webview
-
-### Tauri 版本
-- Rust 1.70+
-- Tauri 2.x
-- WebView2 (Windows) / WebKit (macOS/Linux)
-- Vite 5.x
-
-## 📝 开发
-
-### Tauri 版本开发
 ```bash
-cd tauri-app
-
-# Windows
-dev.bat
-
-# Linux/macOS
-./dev.sh
+# 构建可执行文件
+npm run tauri build
 ```
 
-### Electron 版本开发
-```bash
-npm start
-```
+构建完成后，可执行文件位于：
+- Windows: `src-tauri/target/release/ai-chat-client.exe`
+- 安装包位于 `src-tauri/target/release/bundle/` 目录
 
-## 🤝 贡献
+## 🚀 快速开始
 
-欢迎提交 Issue 和 Pull Request！
+1. **启动应用**
+   - 双击运行 `ai-chat-client.exe`
+   - 或使用命令行：`./src-tauri/target/release/ai-chat-client.exe`
+
+2. **配置API**
+   - 点击左下角"模型商"按钮
+   - 编辑智谱AI或其他模型商的API Key
+   - （可选）修改自定义Endpoint
+
+3. **开始聊天**
+   - 点击"+ 新建对话"创建对话
+   - 在输入框输入消息，按Enter发送
+   - 使用Alt+Enter插入换行
+
+4. **使用翻译**
+   - 点击左下角"翻译"按钮
+   - 输入待翻译文本
+   - 选择源语言和目标语言
+   - 点击"翻译"按钮
+
+## 📸 界面预览
+
+### 主界面
+- 左侧边栏：对话列表
+- 主区域：消息显示和输入框
+- 右下角：发送/停止按钮
+
+### 功能页面
+- **设置**: 界面个性化设置
+- **模型商**: API配置管理
+- **关于**: 程序信息
+- **翻译助手**: 文本翻译工具
+
+## ⚙️ 配置说明
+
+### 智谱AI配置
+- API Key: 从[智谱AI开放平台](https://open.bigmodel.cn/)获取
+- Endpoint: `https://open.bigmodel.cn/api/paas/v4/chat/completions`
+
+### Gemini配置
+- API Key: 从[Google AI Studio](https://aistudio.google.com/)获取
+- Endpoint: `https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent`
+
+### 自定义模型商
+点击"添加模型商"按钮，输入：
+- 模型商名称
+- API Endpoint
+- API Key（编辑时设置）
+
+## 🎯 使用技巧
+
+1. **停止生成**: 点击红色停止按钮可中断AI回复，问题会恢复到输入框
+2. **调整输入框**: 拖动输入框顶部横条可调整高度
+3. **复制代码**: 点击代码块右上角的复制按钮
+4. **多行输入**: 使用Alt+Enter在输入框中换行
+5. **切换主题**: 在设置中选择深色或浅色主题
+
+## 📝 数据存储
+
+所有数据保存在本地localStorage：
+- 对话历史
+- API配置
+- 用户设置
+- 模型商配置
+
+## 🔐 隐私说明
+
+- 所有数据仅存储在本地
+- API请求直接发送到配置的endpoint
+- 不经过任何中间服务器
 
 ## 📄 许可证
 
-GPL-3.0 License
+MIT License
 
-## 🙏 致谢
+## 🤝 贡献
 
-感谢所有开源项目的贡献者！
+欢迎提交Issue和Pull Request！
 
-## 📮 联系方式
+## 📧 联系方式
 
-- GitHub: https://github.com/Funsiooo/Ai-Talk
-- Issues: https://github.com/Funsiooo/Ai-Talk/issues
-
-## 📢 免责声明
-
-本项目仅用于学习和交流，请遵守各 AI 服务的使用条款。
+如有问题或建议，请提交Issue。
 
 ---
 
-**⭐ 如果这个项目对你有帮助，请给个 Star！**
-
-## 🚦 快速导航
-
-- 🚀 [开始使用](#快速开始)
-- 📊 [版本对比](#版本对比)
-- 📁 [项目结构](#项目结构)
-- 🤖 [支持的 AI 服务](#支持的-ai-服务)
-- 📖 [文档](#文档)
+**享受与AI的对话！** 🎉

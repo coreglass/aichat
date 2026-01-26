@@ -1,77 +1,20 @@
 {
-  "name": "Ai Talk",
-  "version": "1.0.2",
-  "main": "main.js",
+  "name": "ai-chat-client",
+  "version": "0.1.0",
+  "description": "AI Chat Client with Tauri",
+  "type": "module",
   "scripts": {
-    "start": "electron .",
-    "build": "electron-forge make",
-    "package": "electron-forge package"
-  },
-  "config": {
-    "forge": {
-      "packagerConfig": {
-        "icon": "assets/logo.icns"
-      },
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "icon": "assets/logo.ico",
-            "setupIcon": "assets/logo.ico",
-            "name": "Ai_Talk",
-            "noMsi": false,
-            "title": "Ai_Talk Installer",
-            "setupExe": "Ai_Talk_Setup.exe",
-            "extraResources": [
-              {
-                "from": "assets/",
-                "to": "assets/"
-              }
-            ]
-          }
-        },
-        {
-          "name": "@electron-forge/maker-dmg",
-          "config": {
-            "icon": "assets/logo.icns"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "config": {
-            "platforms": [
-              "darwin",
-              "win32"
-            ]
-          }
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
-        }
-      ]
-    }
-  },
-  "author": "Funsiooo",
-  "license": "GPL-3.0",
-  "description": "一款集合了多种大语言模型应用的开源桌面客户端",
-  "devDependencies": {
-    "@electron-forge/cli": "^7.10.2",
-    "@electron-forge/maker-deb": "^7.6.0",
-    "@electron-forge/maker-dmg": "^7.10.2",
-    "@electron-forge/maker-rpm": "^7.6.0",
-    "@electron-forge/maker-squirrel": "^7.6.0",
-    "@electron-forge/maker-zip": "^7.6.0",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.6.0",
-    "@electron-forge/plugin-fuses": "^7.6.0",
-    "appdmg": "^0.6.6",
-    "electron": "^33.4.11"
+    "dev": "vite",
+    "build": "vite build",
+    "tauri": "tauri"
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
+    "@tauri-apps/api": "^2.1.1",
+    "@tauri-apps/plugin-shell": "^2.0.1",
+    "marked": "^17.0.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0",
+    "vite": "^6.0.3"
   }
 }
