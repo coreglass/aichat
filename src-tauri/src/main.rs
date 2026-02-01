@@ -58,6 +58,30 @@ struct ErrorDetail {
 // Default Zhipu AI endpoint
 const DEFAULT_ENDPOINT: &str = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
 
+// 窗口控制命令
+#[tauri::command]
+async fn minimize_window(window: tauri::Window) -> Result<(), String> {
+    window.minimize()
+        .map_err(|e| format!("最小化失败: {}", e))
+}
+
+#[tauri::command]
+async fn maximize_window(window: tauri::Window) -> Result<(), String> {
+    if window.is_maximized().map_err(|e| format!("获取窗口状态失败: {}", e))? {
+        window.unmaximize()
+            .map_err(|e| format!("还原窗口失败: {}", e))
+    } else {
+        window.maximize()
+            .map_err(|e| format!("最大化失败: {}", e))
+    }
+}
+
+#[tauri::command]
+async fn close_window(window: tauri::Window) -> Result<(), String> {
+    window.close()
+        .map_err(|e| format!("关闭失败: {}", e))
+}
+
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 async fn chat_completion(
@@ -129,7 +153,12 @@ async fn chat_completion(
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![chat_completion])
+        .invoke_handler(tauri::generate_handler![
+            chat_completion,
+            minimize_window,
+            maximize_window,
+            close_window
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

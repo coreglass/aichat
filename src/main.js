@@ -1,5 +1,6 @@
 import { open } from '@tauri-apps/plugin-shell';
 import { marked } from 'marked';
+import { invoke } from '@tauri-apps/api/core';
 
 // Configure marked
 marked.setOptions({
@@ -15,9 +16,13 @@ let settings = {
   endpoint: '',
   model: 'glm-4',
   fontSize: 14,
-  bgColor: 'dark',
+  themeMode: 'dark',
+  bgColor: '#1a1a2e',
+  bgOpacity: 100,
   language: 'zh-CN',
-  userAvatar: 'U'
+  userAvatar: 'U',
+  avatarType: 'text',
+  avatarImage: null
 };
 let providers = [
   {
@@ -64,9 +69,20 @@ const sidebarResizer = document.getElementById('sidebar-resizer');
 
 // DOM Elements - Settings
 const fontSizeSelect = document.getElementById('font-size');
-const bgColorSelect = document.getElementById('bg-color');
+const themeModeSelect = document.getElementById('theme-mode');
+const bgColorPicker = document.getElementById('bg-color-picker');
+const bgColorHex = document.getElementById('bg-color-hex');
+const bgColorReset = document.getElementById('bg-color-reset');
+const bgOpacitySlider = document.getElementById('bg-opacity');
+const bgOpacityValue = document.getElementById('bg-opacity-value');
 const languageSelect = document.getElementById('language');
 const userAvatarInput = document.getElementById('user-avatar');
+const avatarTypeRadios = document.querySelectorAll('input[name="avatar-type"]');
+const avatarUpload = document.getElementById('avatar-upload');
+const avatarPreview = document.getElementById('avatar-preview');
+const avatarPreviewContainer = document.getElementById('avatar-preview-container');
+const btnRemoveAvatar = document.getElementById('btn-remove-avatar');
+const liveAvatarPreview = document.getElementById('live-avatar-preview');
 
 // DOM Elements - Providers
 const providersList = document.getElementById('providers-list');
@@ -134,6 +150,13 @@ async function init() {
       sidebar.style.width = width + 'px';
     }
   }
+
+  // Listen for system theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (settings.themeMode === 'system') {
+      applySettings();
+    }
+  });
 }
 
 // View Navigation
@@ -179,28 +202,95 @@ function applySettings() {
   // Apply font size
   document.body.style.fontSize = settings.fontSize + 'px';
 
-  // Apply background color
-  if (settings.bgColor === 'light') {
-    document.documentElement.style.setProperty('--bg-primary', '#ffffff');
-    document.documentElement.style.setProperty('--bg-secondary', '#f5f5f5');
-    document.documentElement.style.setProperty('--bg-tertiary', '#e8e8e8');
-    document.documentElement.style.setProperty('--text-primary', '#1a1a1a');
-    document.documentElement.style.setProperty('--text-secondary', '#666666');
-    document.documentElement.style.setProperty('--border-color', '#d0d0d0');
-  } else {
-    document.documentElement.style.setProperty('--bg-primary', '#1e1e1e');
-    document.documentElement.style.setProperty('--bg-secondary', '#252526');
-    document.documentElement.style.setProperty('--bg-tertiary', '#2d2d2d');
-    document.documentElement.style.setProperty('--text-primary', '#e0e0e0');
-    document.documentElement.style.setProperty('--text-secondary', '#a0a0a0');
-    document.documentElement.style.setProperty('--border-color', '#3d3d3d');
-  }
+  // Apply theme mode and background
+  applyThemeMode();
+
+  // Apply background color and opacity
+  applyBackgroundSettings();
 
   // Apply to settings UI
   fontSizeSelect.value = settings.fontSize;
-  bgColorSelect.value = settings.bgColor;
+  themeModeSelect.value = settings.themeMode || 'dark';
+  bgColorPicker.value = settings.bgColor || '#1a1a2e';
+  bgColorHex.value = settings.bgColor || '#1a1a2e';
+  bgOpacitySlider.value = settings.bgOpacity || 100;
+  bgOpacityValue.textContent = `(${settings.bgOpacity || 100}%)`;
   languageSelect.value = settings.language;
   userAvatarInput.value = settings.userAvatar || 'U';
+
+  // Apply avatar type
+  avatarTypeRadios.forEach(radio => {
+    radio.checked = radio.value === (settings.avatarType || 'text');
+  });
+
+  // Apply avatar image
+  if (settings.avatarType === 'image' && settings.avatarImage) {
+    avatarPreview.src = settings.avatarImage;
+    avatarPreviewContainer.style.display = 'block';
+  } else {
+    avatarPreviewContainer.style.display = 'none';
+  }
+
+  // Update avatar display
+  updateAvatarDisplay();
+  updateLivePreview();
+}
+
+function applyBackgroundSettings() {
+  // Apply background opacity to both gradient and custom color layers
+  const opacity = (settings.bgOpacity || 100) / 100;
+
+  // Set gradient layer opacity
+  document.documentElement.style.setProperty('--bg-gradient-opacity', opacity);
+
+  // Apply custom background color
+  if (settings.bgColor && settings.bgColor !== '#1a1a2e') {
+    // User has selected a custom color
+    document.documentElement.style.setProperty('--custom-bg-color', settings.bgColor);
+    document.documentElement.style.setProperty('--custom-bg-opacity', opacity);
+  } else {
+    // Use default gradient, hide custom color
+    document.documentElement.style.setProperty('--custom-bg-color', 'transparent');
+    document.documentElement.style.setProperty('--custom-bg-opacity', '0');
+  }
+}
+
+function applyThemeMode() {
+  const theme = settings.themeMode || 'dark';
+  let actualTheme = theme;
+
+  // Check system theme if mode is 'system'
+  if (theme === 'system') {
+    actualTheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+
+  if (actualTheme === 'light') {
+    // Light theme
+    document.documentElement.style.setProperty('--bg-gradient-start', '#f0f4f8');
+    document.documentElement.style.setProperty('--bg-gradient-end', '#e2e8f0');
+    document.documentElement.style.setProperty('--bg-gradient-accent', '#cbd5e1');
+    document.documentElement.style.setProperty('--glass-bg-light', 'rgba(0, 0, 0, 0.02)');
+    document.documentElement.style.setProperty('--glass-bg-medium', 'rgba(0, 0, 0, 0.04)');
+    document.documentElement.style.setProperty('--glass-bg-dark', 'rgba(0, 0, 0, 0.06)');
+    document.documentElement.style.setProperty('--glass-border', 'rgba(0, 0, 0, 0.08)');
+    document.documentElement.style.setProperty('--glass-border-hover', 'rgba(0, 0, 0, 0.12)');
+    document.documentElement.style.setProperty('--text-primary', '#1a1a1a');
+    document.documentElement.style.setProperty('--text-secondary', '#4a5568');
+    document.documentElement.style.setProperty('--text-tertiary', '#718096');
+  } else {
+    // Dark theme (default)
+    document.documentElement.style.setProperty('--bg-gradient-start', '#1a1a2e');
+    document.documentElement.style.setProperty('--bg-gradient-end', '#16213e');
+    document.documentElement.style.setProperty('--bg-gradient-accent', '#0f3460');
+    document.documentElement.style.setProperty('--glass-bg-light', 'rgba(255, 255, 255, 0.05)');
+    document.documentElement.style.setProperty('--glass-bg-medium', 'rgba(255, 255, 255, 0.08)');
+    document.documentElement.style.setProperty('--glass-bg-dark', 'rgba(255, 255, 255, 0.12)');
+    document.documentElement.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.12)');
+    document.documentElement.style.setProperty('--glass-border-hover', 'rgba(255, 255, 255, 0.2)');
+    document.documentElement.style.setProperty('--text-primary', '#ffffff');
+    document.documentElement.style.setProperty('--text-secondary', 'rgba(255, 255, 255, 0.7)');
+    document.documentElement.style.setProperty('--text-tertiary', 'rgba(255, 255, 255, 0.5)');
+  }
 }
 
 // Providers
@@ -396,6 +486,41 @@ function deleteConversation(id, event) {
 }
 
 // Format timestamp
+function updateAvatarDisplay() {
+  const textGroup = document.getElementById('avatar-text-group');
+  const imageGroup = document.getElementById('avatar-image-group');
+
+  if (settings.avatarType === 'image') {
+    textGroup.style.display = 'none';
+    imageGroup.style.display = 'block';
+  } else {
+    textGroup.style.display = 'block';
+    imageGroup.style.display = 'none';
+  }
+}
+
+function updateLivePreview() {
+  const preview = liveAvatarPreview;
+
+  if (settings.avatarType === 'image' && settings.avatarImage) {
+    preview.style.backgroundImage = `url(${settings.avatarImage})`;
+    preview.style.backgroundSize = 'cover';
+    preview.style.backgroundPosition = 'center';
+    preview.textContent = '';
+  } else {
+    preview.style.backgroundImage = '';
+    preview.textContent = settings.userAvatar || 'U';
+  }
+}
+
+function getUserAvatarHTML() {
+  if (settings.avatarType === 'image' && settings.avatarImage) {
+    return `<img src="${settings.avatarImage}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+  } else {
+    return settings.userAvatar || 'U';
+  }
+}
+
 function formatTimestamp(isoString) {
   const date = new Date(isoString);
 
@@ -455,7 +580,7 @@ function renderMessages() {
       `;
     }
 
-    const avatar = msg.role === 'user' ? (settings.userAvatar || 'U') : 'AI';
+    const avatar = msg.role === 'user' ? getUserAvatarHTML() : 'AI';
 
     return `
       <div class="message ${msg.role}" id="msg-${msg.id}">
@@ -1050,6 +1175,70 @@ async function performTranslation() {
 
 // Event Listeners
 function setupEventListeners() {
+  // Titlebar buttons - 使用更可靠的事件绑定
+  const minimizeBtn = document.getElementById('titlebar-minimize');
+  const maximizeBtn = document.getElementById('titlebar-maximize');
+  const closeBtn = document.getElementById('titlebar-close');
+
+  console.log('Setting up titlebar buttons...');
+
+  if (minimizeBtn) {
+    minimizeBtn.addEventListener('click', async (e) => {
+      console.log('Minimize button clicked');
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        console.log('Calling minimize_window command...');
+        await invoke('minimize_window');
+        console.log('Minimize successful');
+      } catch (err) {
+        console.error('Failed to minimize window:', err);
+        alert('最小化失败: ' + err);
+      }
+    });
+    console.log('Minimize button listener attached');
+  } else {
+    console.log('Minimize button not found!');
+  }
+
+  if (maximizeBtn) {
+    maximizeBtn.addEventListener('click', async (e) => {
+      console.log('Maximize button clicked');
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        console.log('Calling maximize_window command...');
+        await invoke('maximize_window');
+        console.log('ToggleMaximize successful');
+      } catch (err) {
+        console.error('Failed to maximize window:', err);
+        alert('最大化失败: ' + err);
+      }
+    });
+    console.log('Maximize button listener attached');
+  } else {
+    console.log('Maximize button not found!');
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', async (e) => {
+      console.log('Close button clicked');
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        console.log('Calling close_window command...');
+        await invoke('close_window');
+        console.log('Close successful');
+      } catch (err) {
+        console.error('Failed to close window:', err);
+        alert('关闭失败: ' + err);
+      }
+    });
+    console.log('Close button listener attached');
+  } else {
+    console.log('Close button not found!');
+  }
+
   // Navigation
   settingsBtn.addEventListener('click', () => switchView('settings'));
   providersBtn.addEventListener('click', () => switchView('providers'));
@@ -1095,8 +1284,48 @@ function setupEventListeners() {
     applySettings();
   });
 
-  bgColorSelect.addEventListener('change', (e) => {
-    settings.bgColor = e.target.value;
+  themeModeSelect.addEventListener('change', (e) => {
+    settings.themeMode = e.target.value;
+    saveSettingsToStorage();
+    applySettings();
+  });
+
+  // Background color picker
+  bgColorPicker.addEventListener('input', (e) => {
+    const color = e.target.value;
+    bgColorHex.value = color;
+    settings.bgColor = color;
+    saveSettingsToStorage();
+    applySettings();
+  });
+
+  bgColorHex.addEventListener('change', (e) => {
+    let color = e.target.value;
+    if (!color.startsWith('#')) {
+      color = '#' + color;
+    }
+    if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+      bgColorPicker.value = color;
+      settings.bgColor = color;
+      saveSettingsToStorage();
+      applySettings();
+    }
+  });
+
+  bgColorReset.addEventListener('click', () => {
+    const defaultColor = '#1a1a2e';
+    bgColorPicker.value = defaultColor;
+    bgColorHex.value = defaultColor;
+    settings.bgColor = defaultColor;
+    saveSettingsToStorage();
+    applySettings();
+  });
+
+  // Background opacity
+  bgOpacitySlider.addEventListener('input', (e) => {
+    const opacity = parseInt(e.target.value);
+    bgOpacityValue.textContent = `(${opacity}%)`;
+    settings.bgOpacity = opacity;
     saveSettingsToStorage();
     applySettings();
   });
@@ -1106,10 +1335,82 @@ function setupEventListeners() {
     saveSettingsToStorage();
   });
 
+  // Avatar type selection
+  avatarTypeRadios.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      settings.avatarType = e.target.value;
+      saveSettingsToStorage();
+      updateAvatarDisplay();
+      applySettings();
+    });
+  });
+
+  // Avatar text input
   userAvatarInput.addEventListener('change', (e) => {
     settings.userAvatar = e.target.value;
     saveSettingsToStorage();
-    renderMessages();
+    updateLivePreview();
+  });
+
+  // Avatar image upload
+  avatarUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.match('image.*')) {
+        showAlertDialog('提示', '请选择图片文件');
+        return;
+      }
+
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        showAlertDialog('提示', '图片大小不能超过2MB');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const imageData = event.target.result;
+
+        // Create image to crop
+        const img = new Image();
+        img.onload = () => {
+          // Create circular crop
+          const canvas = document.createElement('canvas');
+          const size = Math.min(img.width, img.height);
+          canvas.width = size;
+          canvas.height = size;
+
+          const ctx = canvas.getContext('2d');
+
+          // Create circular clip
+          ctx.beginPath();
+          ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.clip();
+
+          // Draw image centered
+          const offsetX = (img.width - size) / 2;
+          const offsetY = (img.height - size) / 2;
+          ctx.drawImage(img, offsetX, offsetY, size, size);
+
+          // Convert to base64
+          settings.avatarImage = canvas.toDataURL('image/png');
+          saveSettingsToStorage();
+          applySettings();
+        };
+        img.src = imageData;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Remove avatar
+  btnRemoveAvatar.addEventListener('click', () => {
+    settings.avatarImage = null;
+    avatarUpload.value = '';
+    saveSettingsToStorage();
+    applySettings();
   });
 
   // Chat

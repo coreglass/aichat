@@ -7,6 +7,20 @@
   <link rel="stylesheet" href="/src/styles.css" />
 </head>
 <body>
+  <!-- Custom Titlebar for Frameless Window -->
+  <div class="titlebar" data-tauri-drag-region>
+    <span style="font-size: 12px; color: var(--text-secondary); pointer-events: none;">AI Chat Client</span>
+    <div style="flex: 1;" data-tauri-drag-region></div>
+    <div style="display: flex; gap: 4px;">
+      <button class="titlebar-button" id="titlebar-minimize" data-tauri-drag-region="false">─</button>
+      <button class="titlebar-button" id="titlebar-maximize" data-tauri-drag-region="false">□</button>
+      <button class="titlebar-button close" id="titlebar-close" data-tauri-drag-region="false">×</button>
+    </div>
+  </div>
+
+  <!-- 玻璃光泽层 -->
+  <div class="glass-shine-layer"></div>
+
   <div id="app">
     <!-- Left Sidebar -->
     <aside class="sidebar" id="sidebar">
@@ -97,32 +111,115 @@
             <h2>设置</h2>
           </div>
           <div class="settings-body">
-            <div class="setting-group">
-              <label for="font-size">字体大小</label>
-              <select id="font-size">
-                <option value="12">小 (12px)</option>
-                <option value="14" selected>中 (14px)</option>
-                <option value="16">大 (16px)</option>
-                <option value="18">特大 (18px)</option>
-              </select>
+            <div class="setting-section">
+              <h3 class="section-title">外观设置</h3>
+
+              <div class="setting-group">
+                <label for="theme-mode">主题模式</label>
+                <select id="theme-mode">
+                  <option value="dark">深色模式</option>
+                  <option value="light">浅色模式</option>
+                  <option value="system">跟随系统</option>
+                </select>
+              </div>
+
+              <div class="setting-group">
+                <label for="bg-color-picker">背景颜色</label>
+                <div class="color-picker-wrapper">
+                  <input type="color" id="bg-color-picker" value="#1a1a2e" />
+                  <input type="text" id="bg-color-hex" value="#1a1a2e" placeholder="#1a1a2e" maxlength="7" />
+                  <button id="bg-color-reset" class="btn-reset" title="重置为默认">↺</button>
+                </div>
+                <small class="setting-hint">选择自定义背景颜色，或使用默认渐变</small>
+              </div>
+
+              <div class="setting-group">
+                <label for="bg-opacity">背景透明度 <span id="bg-opacity-value">(100%)</span></label>
+                <input type="range" id="bg-opacity" min="0" max="100" value="100" class="opacity-slider" />
+                <div class="opacity-preview">
+                  <span>0%</span>
+                  <span>50%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+
+              <div class="setting-group">
+                <label for="font-size">字体大小</label>
+                <select id="font-size">
+                  <option value="12">小 (12px)</option>
+                  <option value="14" selected>中 (14px)</option>
+                  <option value="16">大 (16px)</option>
+                  <option value="18">特大 (18px)</option>
+                </select>
+              </div>
             </div>
-            <div class="setting-group">
-              <label for="bg-color">背景颜色</label>
-              <select id="bg-color">
-                <option value="dark" selected>深色</option>
-                <option value="light">浅色</option>
-              </select>
+
+            <div class="setting-section">
+              <h3 class="section-title">用户头像</h3>
+
+              <div class="setting-group">
+                <label>头像类型</label>
+                <div class="avatar-type-selector">
+                  <label class="radio-option">
+                    <input type="radio" name="avatar-type" value="text" checked />
+                    <span>文字</span>
+                  </label>
+                  <label class="radio-option">
+                    <input type="radio" name="avatar-type" value="image" />
+                    <span>图片</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="setting-group" id="avatar-text-group">
+                <label for="user-avatar">用户头像文字</label>
+                <input type="text" id="user-avatar" placeholder="输入自定义字符或Emoji" maxlength="2" />
+                <small class="setting-hint">支持1-2个字符或Emoji表情</small>
+              </div>
+
+              <div class="setting-group" id="avatar-image-group" style="display: none;">
+                <label for="avatar-upload">上传头像图片</label>
+                <div class="avatar-upload-area">
+                  <input type="file" id="avatar-upload" accept="image/png,image/jpeg,image/gif" style="display: none;" />
+                  <button class="btn-upload" onclick="document.getElementById('avatar-upload').click()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    选择图片
+                  </button>
+                  <div class="avatar-preview-container" id="avatar-preview-container" style="display: none;">
+                    <div class="avatar-preview-wrapper">
+                      <img id="avatar-preview" alt="头像预览" />
+                      <button class="btn-remove-avatar" id="btn-remove-avatar" title="删除头像">×</button>
+                    </div>
+                  </div>
+                  <small class="setting-hint">支持 PNG、JPG、GIF 格式，建议正方形图片</small>
+                </div>
+              </div>
+
+              <div class="avatar-live-preview">
+                <label>实时预览</label>
+                <div class="message user">
+                  <div class="message-avatar" id="live-avatar-preview">U</div>
+                  <div class="message-content">
+                    <div class="message-text">这是您的头像预览效果</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="setting-group">
-              <label for="language">界面语言</label>
-              <select id="language">
-                <option value="zh-CN" selected>简体中文</option>
-                <option value="en-US">English</option>
-              </select>
-            </div>
-            <div class="setting-group">
-              <label for="user-avatar">用户头像</label>
-              <input type="text" id="user-avatar" placeholder="输入自定义字符或Emoji" maxlength="2" />
+
+            <div class="setting-section">
+              <h3 class="section-title">语言设置</h3>
+
+              <div class="setting-group">
+                <label for="language">界面语言</label>
+                <select id="language">
+                  <option value="zh-CN" selected>简体中文</option>
+                  <option value="en-US">English</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
